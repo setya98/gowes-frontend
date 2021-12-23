@@ -1,0 +1,13 @@
+[{
+  "_id": {
+    "$oid": "5f15d5cdcb4a6642bddc0fe9"
+  },
+  "name": "Parts",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5f15d5b7cb4a6642bddc0fe8"
+  },
+  "name": "Accesories",
+  "__v": 0
+}]

@@ -1,57 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from "react-native";
 import {
-  View,
-  StyleSheet,
-  ActivityIndicator,
-  ScrollView,
-  Dimensions,
-  Image
-} from "react-native";
-import { useQuery } from "@apollo/client"
-import { Container, Header, Item, Icon, Input, Text } from "native-base";
+  Container,
+  ListItem,
+  Header,
+  Item,
+  Icon,
+  Input,
+  Text,
+} from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import { FETCH_ITEMS_QUERY } from "../../util/graphql"
 import ProductList from "./ProductList";
 import SearchedProduct from "./SearchedProduct";
 import Banner from "../../component/Banner";
-import CategoryFilter from "./CategoryFilter";
 import TitleHeader from "../../component/TitleHeader";
+import { Card, Chip } from "react-native-paper";
+import { useQuery } from "@apollo/react-hooks";
+import { FETCH_ITEMS_QUERY } from "../../util/graphql";
 
-var { height, width } = Dimensions.get("window");
-const data = require("../../assets/data/products.json");
-const categories = require("../../assets/data/categories.json");
+var { height } = Dimensions.get("window")
 
 const ProductContainer = (props) => {
   const [products, setProducts] = useState([]);
   const [productsFiltered, setProductsFiltered] = useState([]);
   const [focus, setFocus] = useState();
-  const [productsCategories, setCategories] = useState([]);
-  const [productsCtg, setProductsCtg] = useState([]);
   const [active, setActive] = useState();
-  const [initialState, setInitialState] = useState([]);
-  const { loading, data } = useQuery(FETCH_ITEMS_QUERY);
+  const [activeChip, setActiveChip] = useState();
+  const { loading, data, refetch } = useQuery(FETCH_ITEMS_QUERY);
   const { getItems: items } = data ? data : [];
 
   useEffect(() => {
     setProducts(items);
     setProductsFiltered(items);
     setFocus(false);
-    setCategories(productsCategories);
-    setProductsCtg(items);
     setActive(-1);
-    setInitialState(data);
+    setActiveChip("All");
 
     return () => {
       setProducts([]);
       setProductsFiltered([]);
       setFocus();
-      setCategories([]);
       setActive();
-      setInitialState();
+      setActiveChip();
     };
   }, []);
 
-  // Producte Methods
+  
+  // Product Methods
   const searchProduct = (text) => {
     setProductsFiltered(
       products.filter((i) => i.name.toLowerCase().includes(text.toLowerCase()))
@@ -66,103 +61,199 @@ const ProductContainer = (props) => {
     setFocus(false);
   };
 
-  // Categories
-  const changeCtg = (ctg) => {
-    {
-      ctg === "all"
-        ? [setProductsCtg(initialState), setActive(true)]
-        : [
-            setProductsCtg(
-              products.filter((i) => i.category._id === ctg),
-              setActive(true)
-            ),
-          ];
-    }
+  const handleChip = (name) => {
+    setActiveChip(name);
+    console.log(name);
   };
 
+  const refetchProduct = () => {
+    refetch();
+  };
 
+  var productsCategory = [];
+
+  // Categories
+  if (items && activeChip === "All") {
+    productsCategory.push(items);
+  } else if (
+    items &&
+    activeChip === "Sparepart" &&
+    items.find((item) => item.category === "sparepart")
+  ) {
+    productsCategory.push(
+      items.filter((item) => item.category === "sparepart")
+    );
+  } else if (
+    items &&
+    activeChip === "Accessories" &&
+    items.find((item) => item.category === "accessories")
+  ) {
+    productsCategory.push(
+      items.filter((item) => item.category === "accessories")
+    );
+  } else if (
+    items &&
+    activeChip === "Apparel" &&
+    items.find((item) => item.category === "apparel")
+  ) {
+    productsCategory.push(
+      items.filter((item) => item.category === "apparel")
+    );
+  }
+ 
   return (
-      <Container>
-        <TitleHeader title="Cari yang terbaik untuk sepedamu"/>
-        <Header style={styles.header} searchBar rounded>
-          <Item style={styles.item}>
+    <Container>
+      <TitleHeader title="Cari yang terbaik untuk sepedamu" />
+      <Header style={styles.header} searchBar rounded>
+        <Item style={styles.item}>
+          <Icon
+            name="ios-search"
+            style={{ color: "#595959", paddingLeft: 15, marginStart: 0 }}
+          />
+          <Input
+            placeholder="Search"
+            placeholderTextColor="#595959"
+            onFocus={openList}
+            onChangeText={(text) => searchProduct(text)}
+            style={{ color: "#595959", height: 25 }}
+          />
+          {focus == true ? (
             <Icon
-              name="ios-search"
-              style={{ color: "#595959", paddingLeft: 15, marginStart: -5 }}
+              onPress={onBlur}
+              name="ios-close"
+              style={{ color: "#8c8c8c" }}
             />
-            <Input
-              placeholder="Search"
-              placeholderTextColor="#595959"
-              onFocus={openList}
-              onChangeText={(text) => searchProduct(text)}
-              style={{ color: "#595959", height: 25 }}
-            />
-            {focus == true ? (
-              <Icon
-                onPress={onBlur}
-                name="ios-close"
-                style={{ color: "#8c8c8c" }}
-              />
-            ) : null}
-          </Item>
-          <View style={{height: 43, width: 43, backgroundColor: "#000", borderRadius: 12, marginTop: 6, marginStart: 8}}>
-            <FontAwesome name="envelope"
-              style={{ color:"#fff", marginTop: 12, marginStart:13, marginEnd: 7 }} size={17}           
-            />
-            </View>
-        </Header>
-        {focus == true ? (
-          <SearchedProduct 
+          ) : null}
+        </Item>
+        <View
+          style={{
+            height: 43,
+            width: 43,
+            backgroundColor: "#000",
+            borderRadius: 12,
+            marginTop: 6,
+            marginStart: 8,
+          }}
+        >
+          <FontAwesome
+            name="envelope"
+            style={{
+              color: "#fff",
+              marginTop: 12,
+              marginStart: 13,
+              marginEnd: 7,
+            }}
+            size={17}
+          />
+        </View>
+      </Header>
+      {focus == true ? (
+        <SearchedProduct
           navigation={props.navigation}
-          productsFiltered={productsFiltered} />
-        ) : (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            scrollEventThrottle={1} 
-            contentContainerStyle={{paddingBottom: 290}}
-          >
-              <View>
-                <Banner />
+          productsFiltered={productsFiltered}
+        />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={1}
+          contentContainerStyle={{ paddingBottom: 190 }}
+        >
+          <View>
+            <Banner />
+          </View>
+            <View>
+              <ListItem
+                noBorder
+                style={{
+                  marginTop: -5,
+                  flexDirection: "row",
+                }}
+              >
+                <Chip
+                  textStyle={[
+                    styles.text,
+                    active == -1 ? styles.textActive : styles.textInactive,
+                  ]}
+                  style={[ styles.center,
+                    active == -1 ? styles.active : styles.inactive]}
+                  onPress={() => {
+                    handleChip("All"), refetchProduct();
+                  }}
+                >
+                  All
+                </Chip>
+                <Chip
+                  textStyle={[
+                    styles.text,
+                    active == -1 ? styles.textActive : styles.textInactive,
+                  ]}
+                  style={[ styles.center,
+                    active == -1 ? styles.active : styles.inactive]}
+                  onPress={() => {
+                    handleChip("Sparepart"), refetchProduct();
+                  }}
+                >
+                  Parts
+                </Chip>
+                <Chip
+                  textStyle={[
+                    styles.text,
+                    active == -1 ? styles.textActive : styles.textInactive,
+                  ]}
+                  style={[ styles.center,
+                    active == -1 ? styles.active : styles.inactive]}
+                  onPress={() => {
+                    handleChip("Accessories"), refetchProduct();
+                  }}
+                >
+                  Accessories
+                </Chip>
+                <Chip
+                  textStyle={[
+                    
+                    active == -1 ? styles.textActive : styles.textInactive,
+                  ]}
+                  style={[ styles.center,
+                   ]}
+                  onPress={() => {
+                    handleChip("Apparel"), refetchProduct();
+                  }}
+                >
+                  Apparel
+                </Chip>
+              </ListItem>
+            </View>
+          {!loading ? (
+            productsCategory.length > 0 ? (
+              <View style={styles.listContainer}>
+                {productsCategory[0] &&
+                  productsCategory[0].map((item, index) => (
+                    <ProductList
+                      navigation={props.navigation}
+                      key={index}
+                      item={item}
+                    />
+                  ))}
               </View>
-              <View>
-                <CategoryFilter
-                  categories={categories}
-                  categoryFilter={changeCtg}
-                  productsCtg={productsCtg}
-                  active={active}
-                  setActive={setActive}
-                />
-              </View>
-              {productsCtg.length > 0 ? (
-                <View style={styles.listContainer}>
-                  {productsCtg.map((item) => {
-                    return (
-                      <ProductList
-                        navigation={props.navigation}
-                        key={item._id}
-                        item={item}
-                      />
-                    );
-                  })}
-                </View>
-              ) : (
-                <View style={[styles.center, {width: width / 2}]}>
-                  
-                  <Text>No Products Found</Text>
-                </View>
-              )}
-          </ScrollView>
-        )}
-      </Container>
+            ) : (
+              <Text>No Products found</Text>
+            )
+          ) : (
+            <ActivityIndicator style={{justifyContent: "center", marginTop: 30}} size="large" color="#000" />
+          )}
+        </ScrollView>
+      )}
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
   listContainer: {
-    height: height,
+    height: "100%",
     flexDirection: "row",
     alignItems: "flex-start",
     flexWrap: "wrap",
+    marginTop: 10,
     backgroundColor: "#fff",
   },
   header: {
@@ -172,15 +263,36 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 20,
   },
-  center: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   item: {
     height: 55,
     borderRadius: 20,
-    marginStart: -11,
+    marginStart: -12,
     backgroundColor: "#f2f2f2",
+  },
+  text: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textActive: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#8c8c8c",
+  },
+  textInactive: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000"
+  },
+  active: {
+    backgroundColor: "#fff", color: "#000"
+  },
+  inactive: {
+    backgroundColor: "#000",
+  },
+  center: {
+    justifyContent: "center",
+    alignSelf: "center",
+    marginEnd: 5
   },
 });
 

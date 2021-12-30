@@ -11,6 +11,7 @@ import {
 import { Container, Item, Text } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 import TitleHeader from "../../component/TitleHeader";
+import FontAwesome from "react-native-vector-icons/FontAwesome"
 import BorderWishlist from "../../component/BorderWishlist";
 import BorderPrice from "../../component/BorderPrice";
 import { connect } from "react-redux";
@@ -26,15 +27,12 @@ const ProductDetail = (props) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.header}>
-        <TouchableWithoutFeedback
-          onPress={() => props.navigation.navigate("Home")}
-        >
-          <Image
-            source={require("../../assets/back.png")}
-            resizeMode="contain"
-            style={{ width: 25, height: 30, marginTop: 7, marginBottom: 5 }}
-          />
-        </TouchableWithoutFeedback>
+      <FontAwesome
+              onPress={() => props.navigation.goBack()}
+              name="chevron-left"
+              size={18}
+              style={{ top: 4 }}
+            />
         <TouchableWithoutFeedback
           onPress={() => props.navigation.navigate("Cart")}
         >
@@ -251,7 +249,7 @@ const ProductDetail = (props) => {
       </ScrollView>
       <View style={styles.bottomHeader}>
         <View style={styles.btnCart}>
-          <Icon name="add" size={25} style={{ color: "#fff" }} />
+          <Icon name="plus" size={25} style={{ color: "#fff" }} />
           <Text
             style={{
               marginLeft: 15,

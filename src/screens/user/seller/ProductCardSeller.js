@@ -7,33 +7,35 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Button, Text } from "native-base";
+import { currencyIdrConverter } from "../../../util/extensions";
 import { useNavigation } from "@react-navigation/native";
 
 var { width } = Dimensions.get("window");
 
 const ProductCardSeller = (props) => {
   const navigation = useNavigation();
-  const { name, price, image } = props;
+  const { item, refetchItems } = props;
+
+  console.log("props seller", props)
 
   return (
     <View style={styles.container}>
       <Image
         style={styles.image}
         resizeMode="contain"
-        source={{
-          uri: image
-            ? image
-            : "https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png",
-        }}
+        source={{ uri: item.images[0].downloadUrl }}
       />
       <View style={styles.card} />
       <Text style={styles.title}>
-        {name.length > 15 ? name.substring(0, 18 - 3) + "..." : name}
+        {item.name.length > 15 ? item.name.substring(0, 18 - 3) + "..." : item.name}
       </Text>
-      <Text style={styles.price}>Rp {price}</Text>
+      <Text style={styles.price}>Rp {currencyIdrConverter(item.price, 0, ".", ",")}</Text>
       <TouchableWithoutFeedback
          onPress={() =>
-          navigation.navigate("Edit Product")}>
+          navigation.navigate("Edit Product", {
+            item: props.item,
+            refetchItems: props.refetchItems
+          })}>
         <View
           style={{
             height: 35,

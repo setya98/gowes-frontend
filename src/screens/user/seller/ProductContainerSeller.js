@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -11,20 +11,24 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { FAB } from "react-native-paper";
 import ProductListSeller from "./ProductListSeller";
+import { useQuery } from "@apollo/react-hooks";
+import { AuthContext } from "../../../context/auth";
+import { FETCH_ITEM_SELLER_QUERY } from "../../../util/graphql";
 
 var { height, width } = Dimensions.get("window");
-const data = require("../../../assets/data/products.json");
 
 const ProductContainerSeller = (props) => {
-  const [products, setProducts] = useState([]);
+  const context = useContext(AuthContext)
 
-  useEffect(() => {
-    setProducts(data);
+  const { loading, data, refetch } = useQuery(FETCH_ITEM_SELLER_QUERY, {
+    variables: {
+      userId: context.user.id
+    }
+  })
 
-    return () => {
-      setProducts([]);
-    };
-  }, []);
+  const { getSellerItems: sellerItems } = data ? data : [];
+
+  console.log("ini item seller", sellerItems)
 
   return (
     <SafeAreaView style={{ backgroundColor: "#fff" }}>
@@ -68,15 +72,19 @@ const ProductContainerSeller = (props) => {
           style={styles.fab}
           medium
           icon="plus"
-          onPress={() => props.navigation.navigate("Add Product")}
+          onPress={() => props.navigation.navigate("Add Product", {
+            refetchItems: refetch
+          })}
         />
       </View>
         <View style={styles.listContainer}>
-          {products.map((item) => (
+          { sellerItems &&
+            sellerItems.map((item, index) => (
             <ProductListSeller
               navigation={props.navigation}
-              key={item._id}
+              key={index}
               item={item}
+              refetchItems={refetch}
             />
           ))}
         </View>

@@ -7,6 +7,7 @@ var { width } = Dimensions.get("window");
 
 const ProductList = (props) => {
   const { item } = props;
+  
   return (
     <TouchableWithoutFeedback
       onPress={() =>
@@ -14,7 +15,7 @@ const ProductList = (props) => {
       }
     >
       <View style={{ width: width / 2, backgroundColor: "white" }}>
-        <ProductCard {...item} />
+        <ProductCard item={item} />
       </View>
     </TouchableWithoutFeedback>
   );

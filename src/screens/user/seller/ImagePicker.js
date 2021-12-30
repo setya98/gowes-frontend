@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import {ImageBrowser} from 'expo-image-picker-multiple';
+import { ImageBrowser } from 'expo-image-picker-multiple';
 import { connect } from 'react-redux';
+import PropTypes from "prop-types"
+import { uploadMultipleImage } from '../../../../Redux/actions/imagePickerAction';
 
 
-const ImagePciker = (props) => {
+const ImagePicker = (props) => {
   getHeaderLoader = () => (
-    <ActivityIndicator size='small' color={'#0580FF'}/>
+    <ActivityIndicator size='small'/>
   );
 
   imagesCallback = (callback) => {
-    const { navigation } = this.props;
-    this.props.navigation.setOptions({
-      headerRight: () => this.getHeaderLoader()
+    const { navigation } = props;
+    navigation.setOptions({
+      headerRight: () => getHeaderLoader()
     });
 
     callback.then(async (photos) => {
@@ -37,14 +39,14 @@ const ImagePciker = (props) => {
     </TouchableOpacity>
   }
 
-  updateHandler = (count, onSubmit) => {
+ const updateHandler = (count, onSubmit) => {
     props.navigation.setOptions({
       title: `Selected ${count} files`,
       headerRight: () => renderDoneButton(count, onSubmit)
     });
   };
 
-  renderSelectedComponent = (number) => (
+ const renderSelectedComponent = (number) => (
     <View style={styles.countBadge}>
       <Text style={styles.countBadgeText}>{number}</Text>
     </View>
@@ -95,5 +97,14 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ImagePciker
+ImagePicker.propTypes = {
+  uploadMultipleImage: PropTypes.func.isRequired,
+  photos: PropTypes.array,
+};
+const mapStateToProps = (state) => ({
+  photos: state.imagePicker.photos,
+});
 
+export default connect(mapStateToProps, { uploadMultipleImage })(
+  ImagePicker
+);

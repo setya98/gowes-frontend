@@ -4,20 +4,73 @@ import { Card, Chip } from "react-native-paper";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { ListItem } from "native-base";
 import Icon from "react-native-vector-icons/AntDesign";
+
+import { useQuery } from "@apollo/react-hooks";
+import { FETCH_ITEM_QUERY } from "../../util/graphql";
+
 import ProductReviewCard from "./ProductReviewCard";
 
 var { height } = Dimensions.get("window")
 
 const ProductReview = (props) => {
+  const item = props.route.params.item
   const [activeChip, setActiveChip] = useState("All");
   const [active, setActive] = useState(-1);
+  const { loading, data } = useQuery(FETCH_ITEM_QUERY, {
+    variables: {
+      itemId: item.id
+    }
+  })
+
+  console.log(item.id)
+
+  const { getItemReviews: reviews } = data ? data : []
 
   const handleChip = (name) => {
     setActiveChip(name);
     console.log(name);
   };
 
+  var reviewList = []
+
+  if (reviews && activeChip === "All") {
+    reviewList.push(reviews);
+  } else if (
+    reviews &&
+    activeChip === "1" &&
+    reviews.find((review) => review.score === 1)
+  ) {
+    reviewList.push(reviews.filter((review) => review.score === 1));
+  } else if (
+    reviews &&
+    activeChip === "2" &&
+    reviews.find((review) => review.score === 2)
+  ) {
+    reviewList.push(reviews.filter((review) => review.score === 2));
+  } else if (
+    reviews &&
+    activeChip === "3" &&
+    reviews.find((review) => review.score === 3)
+  ) {
+    reviewList.push(reviews.filter((review) => review.score === 3));
+  } else if (
+    reviews &&
+    activeChip === "4" &&
+    reviews.find((review) => review.score === 4)
+  ) {
+    reviewList.push(reviews.filter((review) => review.score === 4));
+  } else if (
+    reviews &&
+    activeChip === "5" &&
+    reviews.find((review) => review.score === 5)
+  ) {
+    reviewList.push(reviews.filter((review) => review.score === 5));
+  }
+
+  console.log(reviewList);
+
   return (
+    <>
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
       <View style={styles.header}>
         <FontAwesome
@@ -56,7 +109,8 @@ const ProductReview = (props) => {
               <ListItem
                 style={{
                   padding: 0,
-                  marginTop: -10,
+                  marginTop: -5,
+                  height: 75,
                   flexDirection: "row",
                   borderBottomColor: "transparent"
                 }}
@@ -140,14 +194,40 @@ const ProductReview = (props) => {
               </ListItem>
             </ScrollView>
       </Card.Content>
-        <Card.Content style={{marginStart: 10, marginTop: 10}}>
-         <View style={{height: height}}>
-         <ProductReviewCard />
-         </View>
-      </Card.Content>
       </Card>
+      {!loading ? (
+        reviewList.length > 0 ? (
+          <Card.Content>
+            {reviewList[0] &&
+              reviewList[0].map((review, index) => (
+                <ProductReviewCard 
+                key={index} 
+                review={review}/>
+              ))
+            }
+          </Card.Content>
+        ) : (
+          <Card style={{backgroundColor: "#f2f2f2", height: "100%"}}>
+            <Card.Content>
+              <Image 
+              source={require("../../assets/ilus-empty.webp")}
+              resizeMode="contain"
+              style={{width: 250, height: 250, alignSelf: "center", marginTop: -15}}
+              />
+              <Text style={{alignSelf: "center", fontSize: 18, fontWeight: "bold"}}>Kamu belum ulas barang</Text>
+            </Card.Content>
+          </Card>
+        )
+      ) : (
+        <Card style={{backgroundColor: "#f2f2f2", height: "100%"}}>
+          <Card.Content>
+          <ActivityIndicator style={{justifyContent: "center", alignSelf:"center", marginTop: "50%"}} size="large" color="#000" />
+          </Card.Content>
+        </Card>
+      )}
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 };
 

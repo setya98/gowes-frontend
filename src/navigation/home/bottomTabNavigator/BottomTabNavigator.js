@@ -6,12 +6,12 @@ import { useRef } from "react";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 // Stacks
-import HomeNavigator from "./HomeNavigator";
-import CartNavigator from "./CartNavigator";
-import WishlistNavigator from "./WishlistNavigator";
-import UserNavigator from "./user/UserNavigator";
+import HomeNavigator from "../HomeNavigator";
+import CartNavigator from "../../CartNavigator";
+import WishlistNavigator from "../../WishlistNavigator";
+import UserNavigator from "../../user/UserNavigator";
 
-import CartIcon from "../component/CartIcon";
+// import CartIcon from "../component/CartIcon";
 
 const Tab = createBottomTabNavigator();
 
@@ -20,14 +20,14 @@ export default function Main({ navigation }) {
   return (
     <NavigationContainer independent={true}>
       <Tab.Navigator
-        initialRouteName="MainTab"
+        initialRouteName="Home"
           screenOptions={{
           tabBarShowLabel: false,
           tabBarHideOnKeyboard: true,
           headerShown: false,
           tabBarStyle: {
             backgroundColor: "white",
-            bottom: 25,
+            bottom: 10,
             position: "absolute",
             marginHorizontal: 20,
             paddingHorizontal: 5,
@@ -57,7 +57,7 @@ export default function Main({ navigation }) {
               >
             
                 <Image
-                  source={require("../assets/homepage.png")}
+                  source={require("../../../assets/homepage.png")}
                   resizeMode="contain"
                   style={{
                     width: 25,
@@ -82,7 +82,7 @@ export default function Main({ navigation }) {
                 }}
               >
                 <Image
-                  source={require("../assets/bag.png")}
+                  source={require("../../../assets/bag.png")}
                   resizeMode="contain"
                   style={{
                     width: 25,
@@ -91,7 +91,7 @@ export default function Main({ navigation }) {
                   }}
                 />
               </View>
-              <CartIcon />
+              {/* <CartIcon /> */}
               </View>
             ),
           }} 
@@ -109,7 +109,7 @@ export default function Main({ navigation }) {
                 }}
               >
                 <Image
-                  source={require("../assets/heart.png")}
+                  source={require("../../../assets/heart.png")}
                   resizeMode="contain"
                   style={{
                     width: 23,
@@ -134,7 +134,7 @@ export default function Main({ navigation }) {
                 }}
               >
                 <Image
-                  source={require("../assets/user.png")}
+                  source={require("../../../assets/user.png")}
                   resizeMode="contain"
                   style={{
                     width: 25,

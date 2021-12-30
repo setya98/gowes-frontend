@@ -6,16 +6,22 @@ import ProductCardSeller from "./ProductCardSeller";
 var { width } = Dimensions.get("window");
 
 const ProductListSeller = (props) => {
-  const { item } = props;
+  const { item, refetchItems } = props;
+  console.log("list props", props)
+
   return (
     <TouchableWithoutFeedback
       onPress={() =>
-        props.navigation.navigate("Product Detail Seller", { item: item })
+        props.navigation.navigate("Product Detail", { item: item })
       }
     >
-      <View style={{ width: width / 2, backgroundColor: "white" }}>
-        <ProductCardSeller {...item} />
-      </View>
+    <View style={{ flexDirection: "column", width: width / 2, backgroundColor: "white" }}>
+        <ProductCardSeller 
+          item={item}
+          navigation={props.navigation}
+          refetchItems={refetchItems}
+        />
+    </View>
     </TouchableWithoutFeedback>
   );
 };

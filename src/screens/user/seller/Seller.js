@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -7,17 +7,69 @@ import {
   Image,
   TouchableWithoutFeedback,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
-import { Text } from "native-base";
+import { Text, Button } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 import StarIcon from "react-native-vector-icons/AntDesign";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { Avatar } from "react-native-paper";
+import { CommonActions } from "@react-navigation/native";
+import { useQuery } from "@apollo/react-hooks";
+import { AuthContext } from "../../../context/auth";
+import { FETCH_USER_QUERY } from "../../../util/graphql";
+
 
 var { height } = Dimensions.get("window");
 
 const Seller = (props) => {
+  const { user } = useContext(AuthContext)
+  console.log('user login', user.id )
+  const { loading, data } = useQuery(FETCH_USER_QUERY, {
+    variables: {
+      userId: user.id
+    }
+  })
+  const { getUser: currentUser } = data ? data : []
+
+  const [avatar, setAvatar] = useState(
+    "https://react.semantic-ui.com/images/avatar/large/molly.png"
+  )
+
   return (
-    <SafeAreaView style={{ backgroundColor: "#fff" }}>
+    <>
+      {loading || currentUser.seller.username === "" ? (
+        <>
+          <View style={{ alignItems: "center", marginVertical: 50 }}>
+          <Image 
+          source={require("../../../assets/ilus-open.webp")}
+          resizeMode="contain"
+          style={{height: 250, width: 250}}
+          />
+          <Text style={{fontSize: 20, fontWeight: "bold"}}>
+              Kamu masih belum punya toko
+            </Text>
+            <Button
+              style={{backgroundColor: "#000", borderRadius: 20, marginTop: 30, alignSelf: "center", width: 150, justifyContent: "center"}}
+              onPress={() => {
+                props.navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: "Edit Seller",
+                      },
+                    ],
+                  })
+                );
+              }}
+            >
+            <Text style={{fontWeight: "bold", fontSize: 15}}>Buka Toko</Text>
+            </Button>
+          </View>
+        </>
+      ) : (
+        <SafeAreaView style={{ backgroundColor: "#fff" }}>
       <View style={styles.header}>
         <Icon onPress={() => props.navigation.goBack()}
         name="chevron-left" size={18} style={{top: 4}} />
@@ -37,26 +89,25 @@ const Seller = (props) => {
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={styles.ImageContainer}>
-          <Image
-            source={require("../../../assets/man.png")}
-            resizeMode="contain"
-            style={{ width: 50, height: 50, marginStart: 15, marginTop: 5 }}
+          <Avatar.Image
+            source={{ uri: currentUser.seller.avatar }}
+            size={50}
+            style={{ marginStart: 15, marginTop: 5 }}
           />
           <TouchableWithoutFeedback
           onPress={() => props.navigation.navigate("Edit Seller")}
           >
             <View style={{ flexDirection: "column" }}>
-            <Text style={{ fontSize: 20, color: "#595959",fontWeight: "700", marginStart: 20, letterSpacing: 0.6 }}>
-              Makmur Jaya
+            <Text style={{ fontSize: 20, color: "#000",fontWeight: "700", marginStart: 20, letterSpacing: 0.6 }}>
+            {currentUser.seller.username}
             </Text>
-          <Icon name="cog" size={18} style={{top: -19, marginStart: 125, color: "#595959"}}/>
           </View>
           </TouchableWithoutFeedback>
-          <StarIcon name="star" size={20} color={"#F18c06"} style={{marginStart: -120, marginTop: 28, }}/> 
-          <View style={{flexDirection: "row", justifyContent: "space-between"}}>
-          <Text style={{color: "#000", top: 26, fontWeight: "bold", fontSize: 22, marginStart: 5}}>4.8</Text>
-          <Text style={{color: "#595959", top: 30, fontWeight: "bold", marginStart: 7}}>Rating</Text>
-          </View>
+          <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 28, marginStart: -45}} />
+          <Text style={{color: "#595959", fontWeight: "bold", marginStart: 7, marginTop: 26}}>{currentUser.address.cityName}</Text>
+          <StarIcon name="star" size={20} color={"#F18c06"} style={{marginStart: -92, marginTop: 55, }}/> 
+          <Text style={{color: "#000", top: 54, fontWeight: "bold", fontSize: 22, marginStart: 5}}>4.8</Text>
+          <Text style={{color: "#595959", top: 58, fontWeight: "bold", marginStart: 7}}>Rating</Text>
           </View>
         <View style={styles.detailContainer}>
          
@@ -85,10 +136,18 @@ const Seller = (props) => {
         </TouchableOpacity>
         </View>
         <View style={{flexDirection:"row", justifyContent: "space-between", paddingHorizontal: 20}}>
+        <TouchableOpacity
+           onPress={() => props.navigation.navigate("Edit Seller")}>
+        <Icon name="address-book" size={18} style={{ alignSelf:"flex-start", top: 30, marginStart: 4, color: "#595959"}} />
+        <Text style={{fontWeight:"500", top: 10, marginStart: 33, color: "#595959", fontSize: 18 }}>Edit Profil Toko</Text>
+        <Icon name="chevron-right" style={{ top: -5,color: "#595959", marginStart: 300}} />
+        </TouchableOpacity>
         </View>
         </View>
       </ScrollView>
     </SafeAreaView>
+      )}
+    </>
   );
 };
 
@@ -103,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "flex-start",
     flexDirection: "row",
-    height: "8%",
+    height: "10%",
     marginTop: 10
   },
   detailContainer: {

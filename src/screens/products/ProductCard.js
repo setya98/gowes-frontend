@@ -11,52 +11,58 @@ import { connect } from "react-redux";
 import * as actions from "../../../Redux/actions/cartAction";
 import * as actionsWishlist from "../../../Redux/actions/wishlistAction";
 import ButtonAdd from "../../component/ButtonAdd";
+import { currencyIdrConverter } from "../../util/extensions";
+import StarIcon from "react-native-vector-icons/AntDesign";
+import FontAwesome from "react-native-vector-icons/FontAwesome"
 
 var { width } = Dimensions.get("window");
 
 const ProductCard = (props) => {
-  const { name, price, image, countInStock } = props;
+  const { item } = props;
 
   return (
     <View style={styles.container}>
       <Image
         style={styles.image}
         resizeMode="contain"
-        source={{
-          uri: image
-            ? image
-            : "https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png",
-        }}
+        source={{ uri: item.images[0].downloadUrl }}
       />
       <View style={styles.card} />
       <Text style={styles.title}>
-        {name.length > 15 ? name.substring(0, 18 - 3) + "..." : name}
+      {item.name.length > 15 ? item.name.substring(0, 18 - 3) + "..." : item.name}
       </Text>
-      <Text style={styles.price}>Rp {price}</Text>
-
-      {countInStock > 0 ? (
+      <Text style={styles.price}>Rp {currencyIdrConverter(item.price, 0, ".", ",")}</Text>
+      <View style={{flexDirection: "row", marginTop: -10, marginStart: -95}}>
+      <StarIcon name="star" size={12} color={"#F18c06"} style={{ marginTop: 8, alignSelf:"flex-start" }}/>
+      <Text style={{color: "#595959", top: 4, fontWeight: "bold", fontSize: 17, marginStart: 5}}>4.8</Text>
+      </View>
+      <View style={{flexDirection: "row", marginStart: -40}}>
+      <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 8}} />
+      <Text style={{color: "#8c8c8c", top: 6, fontWeight: "bold", fontSize: 15, marginStart: 7}}>{item.user.address.cityName}</Text>
+      </View>
+      {/* {item > 0 ? ( */}
         <TouchableWithoutFeedback
-          onPress={() => {
-            props.addItemToCart(props);
+          onPress={() => { console.log(item)
+            // props.addItemToCart(props);
           }}
         >
-          <View style={{width: "100%"}}>
+          <View style={{width: "100%", marginTop: 20, marginBottom: -10}}>
             <ButtonAdd />
           </View>
         </TouchableWithoutFeedback>
-      ) : (
+      {/* ) : (
         <Text style={{ marginTop: 20 }}>Currently Unavailable</Text>
-      )}
+      )} */}
     </View>
   );
 };
 
-const mapDisptachToProps = (dispatch) => {
-  return {
-    addItemToCart: (product) =>
-      dispatch(actions.addToCart({ quantify: 1, product })),
-  };
-};
+// const mapDisptachToProps = (dispatch) => {
+//   return {
+//     addItemToCart: (product) =>
+//       dispatch(actions.addToCart({ quantify: 1, product })),
+//   };
+// };
 
 const styles = StyleSheet.create({
   container: {
@@ -66,28 +72,29 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginRight: 15,
     marginBottom: 10,
+    elevation: 2,
     alignItems: "center",
     backgroundColor: "#f2f2f2",
   },
   image: {
     flex: 1,
-    width: width / 2 - 20 - 40,
+    width: width / 2 - 20 - 55,
     height: width / 2 + 5,
     backgroundColor: "transparent",
     position: "absolute",
-    top: -20,
+    top: -5,
   },
   card: {
-    marginBottom: 30,
+    marginBottom: 10,
     height: width / 2 - 20 - 90,
     backgroundColor: "transparent",
     width: width / 2 - 20 - 10,
   },
   title: {
-    fontWeight: "500",
+    fontWeight: "bold",
     fontSize: 16,
     color: "#595959",
-    top: 30,
+    top: 75,
     textAlign: "left",
     alignSelf: "flex-start",
   },
@@ -95,10 +102,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#000",
     fontWeight: "bold",
-    marginTop: 35,
+    marginTop: 80,
     marginBottom: 15,
     alignSelf: "flex-start",
   },
 });
 
-export default connect(null, mapDisptachToProps)(ProductCard);
+export default ProductCard;

@@ -7,7 +7,6 @@ import { Rating } from "react-native-ratings";
 const OrderDetail = (props) => {
 
     return (
-        <View>
         <Card style={styles.card}
         //  onPress={() =>
         //     props.navigation.navigate("Order Detail")}
@@ -36,7 +35,6 @@ const OrderDetail = (props) => {
                 </View>
             </Card.Content>
         </Card>
-      </View>
     );
   };
 

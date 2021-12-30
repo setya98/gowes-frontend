@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -6,15 +6,35 @@ import {
   SafeAreaView,
   Image,
   TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
 import { Button, Container, Item, Text } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 import StarIcon from "react-native-vector-icons/AntDesign";
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
-import { Card} from "react-native-paper";
+import { Card, Avatar } from "react-native-paper";
+import { useQuery } from "@apollo/react-hooks";
+import { AuthContext } from "../../../context/auth";
+import { FETCH_USER_QUERY } from "../../../util/graphql";
 
 const Buyer = (props) => {
+  const { user, logout } = useContext(AuthContext)
+  console.log("user sudah logout", user.id)
+  const { loading, data: data } = useQuery(FETCH_USER_QUERY, {
+    variables: {
+      userId: user.id
+    }
+  })
+  const { getUser: currentUser } = data ? data : []
+  console.log(currentUser)
+  const [avatar, setAvatar] = useState(
+    "https://react.semantic-ui.com/images/avatar/large/molly.png"
+  )
   return (
+    <>
+    {loading ? (
+    <ActivityIndicator style={{justifyContent: "center", alignSelf:"center", marginTop: "50%"}} size="large" color="#000" />
+      ) : (
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
       <View style={styles.header}>
         <Text
@@ -33,26 +53,25 @@ const Buyer = (props) => {
         contentContainerStyle={{ paddingBottom: 190 }}
       >
         <View style={styles.ImageContainer}>
-          <Image
-            source={require("../../../assets/man.png")}
-            resizeMode="contain"
-            style={{ width: 50, height: 50, marginStart: 15, marginTop: 5 }}
+          <Avatar.Image
+            source={{ uri: currentUser.buyer.avatar }}
+            size={55}
+            style={{ marginStart: 15, marginTop: 5, backgroundColor: "#8c8c8c" }}
           />
           <TouchableWithoutFeedback
           onPress={() => props.navigation.navigate("Edit Buyer")}>
-            <Text style={{ fontSize: 20, fontWeight: "700", marginStart: 20, letterSpacing: 0.6 }}>
-              Setya
+            <Text style={{ fontSize: 20, fontWeight: "700", marginStart: 15, letterSpacing: 0.6 }}>
+              {currentUser.buyer.name}
             </Text>
-            <Icon name="cog" size={18} style={{top: -19, marginStart: 70}}/>
             </TouchableWithoutFeedback>
+        </View>
             <Card onPress={() => props.navigation.navigate("Seller")} 
-            style={{width: 130, height: 30, borderRadius: 10, marginStart: -75, marginTop: 30}}>
+            style={{width: 130, height: 30, borderRadius: 10, alignSelf: "center", marginTop: -28, marginStart: -65}}>
           <View style={{flexDirection: "row", justifyContent: "space-between"}}>
           <Text style={{alignSelf:"flex-start", marginStart: 10, marginTop: 5, color: "#595959", fontWeight: "700"}}>Toko Saya</Text>
           <Icon name="chevron-right" style={{top: 9, end: 10, color: "#595959"}}/>
           </View>
         </Card>
-        </View>
         
         <View style={styles.detailContainer}>
          
@@ -74,9 +93,9 @@ const Buyer = (props) => {
         </View>
         <View style={{flexDirection:"row", justifyContent: "space-between", paddingHorizontal: 20}}>
         <TouchableOpacity
-           onPress={() => props.navigation.navigate("Order Detail")}>
+          onPress={() => props.navigation.navigate("Edit Buyer")}>  
         <Icon name="address-book" size={17} style={{ alignSelf:"flex-start", top: 30, marginStart: 4, color: "#595959"}} />
-        <Text style={{fontWeight:"500", top: 10, marginStart: 33, color: "#595959", fontSize: 18 }}>Alamat</Text>
+        <Text style={{fontWeight:"500", top: 10, marginStart: 33, color: "#595959", fontSize: 18 }}>Edit Profil</Text>
         <Icon name="chevron-right" style={{ top: -5,color: "#595959", marginStart: 300}} />
         </TouchableOpacity>
         </View>
@@ -89,11 +108,18 @@ const Buyer = (props) => {
         </TouchableOpacity>
         </View>
         </View>
-        <Button style={{borderRadius: 15, backgroundColor: "#000", top: 25, width: "80%", justifyContent: "center", alignSelf: "center"}}>
+        <Button
+         onPress={() => {
+          logout;
+          props.navigation.navigate("Login");
+        }}
+        style={{borderRadius: 15, backgroundColor: "#000", top: 25, width: "80%", justifyContent: "center", alignSelf: "center"}}>
           <Text style={{fontWeight: "700", fontSize: 16}}>Logout</Text>
         </Button>
       </ScrollView>
     </SafeAreaView>
+      )}
+    </>
   );
 };
 

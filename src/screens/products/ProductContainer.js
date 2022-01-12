@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
 import {
   Container,
   ListItem,
@@ -44,7 +44,6 @@ const ProductContainer = (props) => {
       setActiveChip();
     };
   }, []);
-
   
   // Product Methods
   const searchProduct = (text) => {
@@ -109,6 +108,7 @@ const ProductContainer = (props) => {
           <Icon
             name="ios-search"
             style={{ color: "#595959", paddingLeft: 15, marginStart: 0 }}
+           
           />
           <Input
             placeholder="Search"
@@ -125,6 +125,7 @@ const ProductContainer = (props) => {
             />
           ) : null}
         </Item>
+        <TouchableOpacity  onPress={() => props.navigation.navigate("Chat")}>
         <View
           style={{
             height: 43,
@@ -146,6 +147,7 @@ const ProductContainer = (props) => {
             size={17}
           />
         </View>
+        </TouchableOpacity>
       </Header>
       {focus == true ? (
         <SearchedProduct
@@ -210,11 +212,11 @@ const ProductContainer = (props) => {
                 </Chip>
                 <Chip
                   textStyle={[
-                    
+                    styles.text,
                     active == -1 ? styles.textActive : styles.textInactive,
                   ]}
                   style={[ styles.center,
-                   ]}
+                    active == -1 ? styles.active : styles.inactive]}
                   onPress={() => {
                     handleChip("Apparel"), refetchProduct();
                   }}
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
   item: {
     height: 55,
     borderRadius: 20,
-    marginStart: -12,
+    marginStart: -10,
     backgroundColor: "#f2f2f2",
   },
   text: {
@@ -284,10 +286,10 @@ const styles = StyleSheet.create({
     color: "#000"
   },
   active: {
-    backgroundColor: "#fff", color: "#000"
+    backgroundColor: "#fff",
   },
   inactive: {
-    backgroundColor: "#000",
+    backgroundColor: "#fff",
   },
   center: {
     justifyContent: "center",

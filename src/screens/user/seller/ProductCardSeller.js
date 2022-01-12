@@ -9,6 +9,8 @@ import {
 import { Button, Text } from "native-base";
 import { currencyIdrConverter } from "../../../util/extensions";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@apollo/client";
+import { FETCH_SINGLE_ITEM_QUERY } from "../../../util/graphql";
 
 var { width } = Dimensions.get("window");
 
@@ -16,52 +18,71 @@ const ProductCardSeller = (props) => {
   const navigation = useNavigation();
   const { item, refetchItems } = props;
 
-  console.log("props seller", props)
+  // console.log("props seller", props)
+
+  const { loading, data: data } = useQuery(FETCH_SINGLE_ITEM_QUERY, {
+    variables: {
+      itemId: item.id,
+    },
+  });
 
   return (
-    <View style={styles.container}>
-      <Image
-        style={styles.image}
-        resizeMode="contain"
-        source={{ uri: item.images[0].downloadUrl }}
-      />
-      <View style={styles.card} />
-      <Text style={styles.title}>
-        {item.name.length > 15 ? item.name.substring(0, 18 - 3) + "..." : item.name}
-      </Text>
-      <Text style={styles.price}>Rp {currencyIdrConverter(item.price, 0, ".", ",")}</Text>
-      <TouchableWithoutFeedback
-         onPress={() =>
-          navigation.navigate("Edit Product", {
-            item: props.item,
-            refetchItems: props.refetchItems
-          })}>
-        <View
-          style={{
-            height: 35,
-            flexDirection: "row",
-            borderRadius: 15,
-            marginBottom: 10,
-            justifyContent: "center",
-            backgroundColor: "#000",
-            width: "100%"
-          }}
-        >
-          <Text
-            style={{
-              fontWeight: "500",
-              justifyContent: "center",
-              marginTop: 8,
-              marginLeft: 7,
-              color: "#fff",
-              fontSize: 16,
-            }}
-          >
-            Edit Produk
+    <>
+      {!loading ? (
+        <View style={styles.container}>
+          <Image
+            style={styles.image}
+            resizeMode="contain"
+            source={{ uri: item.images[0].downloadUrl }}
+          />
+          <View style={styles.card} />
+          <Text style={styles.title}>
+            {item.name.length > 15
+              ? item.name.substring(0, 18 - 3) + "..."
+              : item.name}
           </Text>
-          </View>
+          <Text style={styles.price}>
+            Rp {currencyIdrConverter(item.price, 0, ".", ",")}
+          </Text>
+          <TouchableWithoutFeedback
+            onPress={() =>
+              navigation.navigate("Edit Product", {
+                item: props.item,
+                product: data,
+                refetchItems: props.refetchItems,
+              })
+            }
+          >
+            <View
+              style={{
+                height: 35,
+                flexDirection: "row",
+                borderRadius: 15,
+                marginBottom: 10,
+                justifyContent: "center",
+                backgroundColor: "#000",
+                width: "100%",
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: "500",
+                  justifyContent: "center",
+                  marginTop: 8,
+                  marginLeft: 7,
+                  color: "#fff",
+                  fontSize: 16,
+                }}
+              >
+                Edit Produk
+              </Text>
+            </View>
           </TouchableWithoutFeedback>
-    </View>
+        </View>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 

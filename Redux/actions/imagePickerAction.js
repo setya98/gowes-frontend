@@ -1,4 +1,4 @@
-import { UPLOAD_MULTIPLE_IMAGE } from "../constant";
+import { UPLOAD_MULTIPLE_IMAGE } from "./type";
 
 export const uploadMultipleImage = (photos) => (dispatch) => {
   dispatch({

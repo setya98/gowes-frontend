@@ -1,161 +1,126 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
-  ScrollView,
   SafeAreaView,
+  Image,
+  KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
   Alert,
-  Image,
+  Dimensions,
+  Text,
   ImageBackground,
+  Picker
 } from "react-native";
+import { Button } from "native-base";
 import { useTheme } from "react-native-paper";
-import Toast from "react-native-toast-message";
-import BottomSheet from "reanimated-bottom-sheet";
-import { Button, Text, Item, Picker } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
-import * as ImagePicker from "expo-image-picker";
+import PropTypes from "prop-types";
+import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
+import Toast from "react-native-toast-message";
+import BottomSheet from "reanimated-bottom-sheet";
 
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useMutation } from "@apollo/client";
+import { connect } from "react-redux";
 import { CommonActions } from "@react-navigation/native";
-import { AuthContext } from "../../../context/auth";
 import { useForm } from "../../../util/hooks";
 import {
-  FETCH_USER_QUERY,
-  UPDATE_SELLER_PROFILE_MUTATION,
+  ADD_ITEM_MUTATION,
 } from "../../../util/graphql";
 
-const AddProduct = (props) => {
-  const { colors } = useTheme();
+var { height } = Dimensions.get("window")
 
-  const context = useContext(AuthContext);
+const AddProduct = (props) => {
+  const {colors} = useTheme();
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
-  console.log("this is the logged user", context.user.id);
+  const [image, setImage] = useState([]);
 
-  const {loading, data} = useQuery(FETCH_USER_QUERY, {
-    variables: {
-      userId: context.user.id,
-    },
+  const [values, setValues] = useState({
+    name: "",
+    price: 0,
+    stock: 0,
+    category: "",
+    condition: "",
+    weight: 0,
+    description: "",
+    length: 0,
+    width: 0,
+    height: 0,
+    images: [
+      {
+        downloadUrl:
+          "https://react.semantic-ui.com/images/avatar/large/molly.png",
+      },
+      {
+        downloadUrl:
+          "https://react.semantic-ui.com/images/avatar/large/molly.png",
+      },
+    ],
   });
-  const { getUser: currentUser } = data ? data : [];
-  const [avatar, setAvatar] = useState(
-    "https://react.semantic-ui.com/images/avatar/large/molly.png"
-  );
 
-  console.log("user@profileCard: ", currentUser);
-
-  const openCamera = async () => {
-    let result = await ImagePicker.launchCameraAsync();
-
-    if (!result.cancelled) {
-      uploadImage(result.uri, `avatar-${new Date().toISOString()}`)
-        .then(() => {
-          console.log("Success");
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+  const onChange = (key, val) => {
+    setValues({ ...values, [key]: val });
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      uploadImage(result.uri, `avatar-${new Date().toISOString()}`)
-        .then(() => {
-          console.log("Success");
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+  const onSubmit = (event) => {
+    event.preventDefault();
+    console.log(typeof(values.condition));
+    submitItem();
   };
 
-  const uploadImage = async (uri, imageName) => {
-    if (uri) {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const uploadTask = storage.ref(`images/avatar/${imageName}`).put(blob);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {},
-        (error) => {
-          console.log(error);
-        },
-        () => {
-          storage
-            .ref("images/avatar")
-            .child(imageName)
-            .getDownloadURL()
-            .then((url) => {
-              setAvatar(url);
-              console.log("this is the avatar " + url);
-            });
-        }
-      );
-    }
-  };
-
-  let userObj = {
-    avatar: "",
-    username: currentUser.seller.username,
-    description: currentUser.seller.description,
-  };
-
-  if (currentUser) {
-    userObj = {
-      username: currentUser.seller.username,
-      description: currentUser.seller.description,
-    };
-  }
-
-  let { onChange, onSubmit, values } = useForm(updateSellerProfile, userObj);
-
-  const [sellerProfileUpdate] = useMutation(UPDATE_SELLER_PROFILE_MUTATION, {
-    update(_, { data: { updateSellerProfile: sellerData } }) {
-      sellerData.username = sellerData.seller.username;
-      context.login(sellerData)
-      setSave(true)
+  const [submitItem, { loading }] = useMutation(ADD_ITEM_MUTATION, {
+    update(_, { data: { addItem: items } }) {
+      console.log("updated")
       setErrors({});
-      props.navigation.navigate("Seller");
+      setSave(true);
+      props.navigation.navigate("Seller")
       Toast.show({
-        topOffset: 50,
+        topOffset: 30,
         type: "success",
-        text1: "Update Profil Toko Tersimpan",
+        text1: "Product Added",
       });
     },
     onError(err) {
+      console.log("error bro")
       setErrors(err.graphQLErrors[0].extensions.exception.errors);
       setSave(true);
     },
     variables: {
-      values,
-    },
+      name: values.name,
+      price: parseInt(values.price),
+      stock: parseInt(values.stock),
+      category: values.category,
+      condition: values.condition,
+      weight: parseInt(values.weight),
+      description: values.description,
+      length: parseInt(values.length),
+      width: parseInt(values.width),
+      height: parseInt(values.height),
+      images: [
+        {
+          downloadUrl:
+            "https://react.semantic-ui.com/images/avatar/large/molly.png",
+        },
+        {
+          downloadUrl:
+            "https://react.semantic-ui.com/images/avatar/large/molly.png",
+        },
+      ],
+    }
   });
-
-  function updateSellerProfile() {
-    values.avatar = avatar
-    sellerProfileUpdate();
-  }
 
   const renderInner = () => (
     <View style={styles.panel}>
       <View style={{ alignItems: "center" }}>
         <Text style={styles.panelTitle}>Unggah Foto</Text>
       </View>
-      <TouchableOpacity style={styles.panelButton} onPress={openCamera}>
-        <Text style={styles.panelButtonTitle}>Ambil Foto</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
+      <TouchableOpacity 
+        style={styles.panelButton} 
+        onPress={() => props.navigation.navigate("Image Picker")}
+        >
         <Text style={styles.panelButtonTitle}>Pilih Dari Galeri</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -163,14 +128,14 @@ const AddProduct = (props) => {
         onPress={() => bottomSheet.current.snapTo(1)}
       >
         <Text style={styles.panelButtonTitle}>Cancel</Text>
-      </TouchableOpacity>
+        </TouchableOpacity>
     </View>
   );
 
   const renderHeader = () => (
     <View style={styles.headerRender}>
       <View style={styles.panelHeader}>
-        <View style={styles.panelHandle} />
+        <View style={styles.panelHandle} /> 
       </View>
     </View>
   );
@@ -192,38 +157,70 @@ const AddProduct = (props) => {
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 110,
+            marginStart: 90,
           }}
         >
-          Edit Profil Toko
+          Tambah Produk
         </Text>
       </View>
-      <ScrollView
+    <KeyboardAvoidingView
+      enabled={true}
+      contentContainerStyle={styles.container}
+    >
+      <BottomSheet
+        ref={bottomSheet}
+        snapPoints={[330, 0]}
+        renderContent={renderInner}
+        renderHeader={renderHeader}
+        initialSnap={1}
+        callbackNode={fall}
+        enabledGestureInteraction={true}
+        enabledContentTapInteraction={false}
+      />
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 190,
-          backgroundColor: "#f2f2f2",
+        contentContainerStyle={{paddingBottom: height}}
+        style={{
+          opacity: Animated.add(0.1, Animated.multiply(fall, 1.0)),
         }}
       >
-        <BottomSheet
-          ref={bottomSheet}
-          snapPoints={[330, 0]}
-          renderContent={renderInner}
-          renderHeader={renderHeader}
-          initialSnap={1}
-          callbackNode={fall}
-          enabledGestureInteraction={true}
-          enabledContentTapInteraction={false}
-        />
-
-        <Animated.View
+        {props.photos ? (
+          <View
+            style={{
+              alignItems: "center", marginBottom: 10
+            }}
+          >
+            <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
+              {props.photos.map((pic) => (
+                <View
+                  style={{
+                    height: 100,
+                    width: 100,
+                    borderRadius: 15,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <ImageBackground
+                    source={{
+                      uri: pic.uri,
+                    }}
+                    style={{ height: 100, width: 100 }}
+                    imageStyle={{ borderRadius: 20 }}
+                  ></ImageBackground>
+                </View>
+              ))}
+            </TouchableOpacity>
+          </View>
+       ) : (
+        <View
           style={{
-            marginBottom: 20,
-            opacity: Animated.add(0.1, Animated.multiply(fall, 1.0)),
+            alignItems: "center",
+            marginBottom: 15,
           }}
         >
-          <View style={{ alignItems: "center", marginBottom: 10 }}>
-            <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
+          <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
+            <View style={{ flexDirection: "row" }}>
               <View
                 style={{
                   height: 100,
@@ -233,53 +230,34 @@ const AddProduct = (props) => {
                   alignItems: "center",
                 }}
               >
-                <ImageBackground
-                  source={{ uri: currentUser.seller.avatar }}
-                  style={{ height: 100, width: 100, marginTop: 15 }}
-                  imageStyle={{ borderRadius: 25 }}
-                >
-                  <View
+                <Image
+                    source={require("../../../assets/plus.png")}
                     style={{
-                      flex: 1,
-                      justifyContent: "center",
+                      opacity: 0.8,
                       alignItems: "center",
+                      justifyContent: "center",
+                      tintColor: "#000",
+                      width: 25,
+                      height: 25,
                     }}
-                  >
-                    <FontAwesome
-                      name="camera"
-                      size={30}
-                      color={"#fff"}
-                      style={{
-                        opacity: 0.7,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    />
-                  </View>
-                </ImageBackground>
+                  />
               </View>
-            </TouchableOpacity>
-            <Text style={{ marginTop: 15, fontSize: 22, fontWeight: "bold" }}>
-              {currentUser.seller.username}
-            </Text>
-          </View>
-          <View style={styles.detailContainer}>
-            <View style={{ paddingVertical: 20, marginStart: 15 }}>
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Profil Toko</Text>
+            </View>
+          </TouchableOpacity>
         </View>
-            <View style={styles.action}>
-          <Image source={require('../../../assets/store.png')} style={{marginStart: 15, marginTop: 12, height: 20, width: 20}} />
+      )}
+            <View style={styles.detailContainer}>
+            <View style={{ paddingVertical: 20, marginStart: 15 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Detail Produk</Text>
+        </View>
+        <View style={styles.action}>
           <TextInput
-            name="username"
-            placeholder="Nama Toko"
+            name="name"
+            placeholder="Name"
             placeholderTextColor="#666666"
+            value={values.name}
+            onChangeText={(val) => onChange("name", val)}
             autoCorrect={false}
-            value={values.username}
-            onChangeText={(val) => onChange("username", val)}
-            error={
-              (errors.username ? true : false,
-              console.log("this is the errors" + errors))
-            }
             style={[
               styles.textInput,
               {
@@ -288,38 +266,176 @@ const AddProduct = (props) => {
             ]}
           />
         </View>
-        <View style={styles.actionDescription}>
-          <Image source={require('../../../assets/info.png')} style={{marginStart: 15, marginTop: 12, height: 18, width: 18}} />
-          <TextInput
-            name="description"
-            placeholder="Deskripsi Toko"
-            placeholderTextColor="#666666"
-            value={values.description}
-            onChangeText={(val) => onChange("description", val)}
-            error={errors.description ? true : false}
-            multiline={true}
-            autoCorrect={false}
-            numberOfLines={10}
-            style={[styles.textInputDescription,
-                {
-                  color: colors.text,
-                },
-            ]}
-          />
-        </View>
-        <Button style={styles.commandButton} onPress={onSubmit}>
+        <View style={styles.action}>
+              <Text
+                style={{
+                  marginStart: 15,
+                  marginTop: 14,
+                  marginEnd: -10,
+                  color: "#000",
+                  fontWeight: "700",
+                }}
+              >
+                Rp{ }
+              </Text>
+              <TextInput
+                name="price"
+                placeholder="Harga"
+                placeholderTextColor="#666666"
+                keyboardType="number-pad"
+                value={values.price}
+                onChangeText={(val) => onChange("price", val)}
+                autoCorrect={false}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.action}>
+              <TextInput
+                name="stock"
+                placeholder="Stok"
+                placeholderTextColor="#666666"
+                keyboardType="number-pad"
+                value={values.stock}
+                onChangeText={(val) => onChange("stock", val)}
+                autoCorrect={false}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+            <View style={{backgroundColor: "#f2f2f2", marginStart: 15, marginEnd: 15, marginBottom: 10, borderRadius: 15, paddingStart: 7}}>
+              <Picker
+                name="category"
+                value={values.category}
+                onValueChange={(val) => onChange("category", val)}
+              >
+                <Picker.Item label="Parts" value="Parts" />
+                <Picker.Item label="Accessories" value="Accessories" />
+                <Picker.Item label="Apparel" value="Apparel" />
+              </Picker>
+              </View>
+              <View style={{backgroundColor: "#f2f2f2", marginStart: 15, marginEnd: 15, marginBottom: 10, borderRadius: 15, paddingStart: 7}}>
+              <Picker
+                name="condition"
+                value={values.condition}
+                onChangeText={(val) => onChange("condition", val)}
+              >
+                <Picker.Item label="New" value="New" />
+                <Picker.Item label="Used" value="Used" />
+                </Picker>
+            </View>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="weight"
+                  placeholder="Berat"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.weight}
+                  onChangeText={(val) => onChange("weight", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="length"
+                  placeholder="Panjang"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.length}
+                  onChangeText={(val) => onChange("length", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="height"
+                  placeholder="Tinggi"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.height}
+                  onChangeText={(val) => onChange("height", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="width"
+                  placeholder="Lebar"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.width}
+                  onChangeText={(val) => onChange("width", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={styles.actionDescription}>
+              <TextInput
+                name="description"
+                placeholder="Deskripsi Barang"
+                multiline={true}
+                numberOfLines={5}
+                placeholderTextColor="#666666"
+                value={values.description}
+                onChangeText={(val) => onChange("description", val)}
+                autoCorrect={false}
+                style={[
+                  styles.textInputDescription,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+          <Button style={styles.commandButton} onPress={onSubmit}>
           <Text style={styles.panelButtonTitle}>Simpan</Text>
-        </Button>
-        </View>
-        
-        </Animated.View>
-        
-      </ScrollView>
+          </Button>
+          </View>
+        </Animated.ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   header: {
     margin: 15,
     flexDirection: "row",
@@ -346,6 +462,7 @@ const styles = StyleSheet.create({
     marginTop: 25,
     height: "100%",
     borderRadius: 30,
+    marginBottom: -90
   },
   panel: {
     padding: 20,
@@ -417,6 +534,20 @@ const styles = StyleSheet.create({
     marginEnd: 15,
     paddingBottom: 5,
   },
+  actionDimension: {
+    flexDirection: "row",
+    marginTop: 5,
+    marginBottom: 10,
+    height: 45,
+    marginStart: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "transparent",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 15,
+    marginEnd: 15,
+    paddingBottom: 5,
+    width: "40%",
+  },
   textInput: {
     flex: 1,
     marginTop: 7,
@@ -441,4 +572,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProduct;
+
+export default AddProduct

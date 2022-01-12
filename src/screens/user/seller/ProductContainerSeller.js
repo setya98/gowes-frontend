@@ -28,7 +28,7 @@ const ProductContainerSeller = (props) => {
 
   const { getSellerItems: sellerItems } = data ? data : [];
 
-  console.log("ini item seller", sellerItems)
+  // console.log("ini item seller", sellerItems)
 
   return (
     <SafeAreaView style={{ backgroundColor: "#fff" }}>

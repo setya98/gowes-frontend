@@ -1,5 +1,5 @@
 import React from "react";
-import { LogBox } from "react-native";
+import { LogBox, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { setContext } from "apollo-link-context";
@@ -72,6 +72,10 @@ export default function App() {
           <Provider store={store}>
             <NavigationContainer>
               <MainNavigator />
+              <StatusBar 
+              backgroundColor="#fff"
+              barStyle="dark-content"
+              />
               <Toast ref={(ref) => Toast.setRef(ref)} />
             </NavigationContainer>
           </Provider>

@@ -202,7 +202,8 @@ const ProductReview = (props) => {
               reviewList[0].map((review, index) => (
                 <ProductReviewCard 
                 key={index} 
-                review={review}/>
+                review={review}
+                />
               ))
             }
           </Card.Content>

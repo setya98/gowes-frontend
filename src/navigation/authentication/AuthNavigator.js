@@ -27,7 +27,6 @@ export default function AuthNavigator() {
       useEffect(() => {
         loginCheck();
         return () => {
-          console.log('This will be logged on unmount');
         };
       }, [isLogin, user, logout, users]);
 

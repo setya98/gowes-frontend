@@ -7,7 +7,7 @@ var { width } = Dimensions.get("window");
 
 const ProductListSeller = (props) => {
   const { item, refetchItems } = props;
-  console.log("list props", props)
+  // console.log("list props", props)
 
   return (
     <TouchableWithoutFeedback

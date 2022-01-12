@@ -8,17 +8,46 @@ import {
 } from "react-native";
 import { Text } from "native-base";
 import { connect } from "react-redux";
-import * as actions from "../../../Redux/actions/cartAction";
-import * as actionsWishlist from "../../../Redux/actions/wishlistAction";
 import ButtonAdd from "../../component/ButtonAdd";
 import { currencyIdrConverter } from "../../util/extensions";
 import StarIcon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome"
+import Toast from "react-native-toast-message"
+
+import { useMutation, useQuery } from "@apollo/client"
+import { ADD_TO_CART_MUTATION, FETCH_SINGLE_ITEM_QUERY } from "../../util/graphql"
+
 
 var { width } = Dimensions.get("window");
 
 const ProductCard = (props) => {
   const { item } = props;
+
+  // const { loading, data: data } = useQuery(FETCH_SINGLE_ITEM_QUERY, {
+  //   variables: {
+  //     itemId: item.id,
+  //   },
+  // });
+
+  const [addToCart] = useMutation(ADD_TO_CART_MUTATION, {
+    variables: {
+      itemId: item.id,
+      // isChecked: false,
+    },
+    onError(err) {
+      // setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      console.log("error bro");
+    },
+  })
+
+  function addItemCart() {
+    addToCart();
+    Toast.show({
+      topOffset: 30,
+      type: "success",
+      text1: "Produk ditambahkan ke bag",
+    });
+  }
 
   return (
     <View style={styles.container}>
@@ -36,15 +65,13 @@ const ProductCard = (props) => {
       <StarIcon name="star" size={12} color={"#F18c06"} style={{ marginTop: 8, alignSelf:"flex-start" }}/>
       <Text style={{color: "#595959", top: 4, fontWeight: "bold", fontSize: 17, marginStart: 5}}>4.8</Text>
       </View>
-      <View style={{flexDirection: "row", marginStart: -40}}>
+      <View style={{flexDirection: "row", alignSelf: "flex-start"}}>
       <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 8}} />
       <Text style={{color: "#8c8c8c", top: 6, fontWeight: "bold", fontSize: 15, marginStart: 7}}>{item.user.address.cityName}</Text>
       </View>
       {/* {item > 0 ? ( */}
         <TouchableWithoutFeedback
-          onPress={() => { console.log(item)
-            // props.addItemToCart(props);
-          }}
+          // onPress={addItemCart}
         >
           <View style={{width: "100%", marginTop: 20, marginBottom: -10}}>
             <ButtonAdd />

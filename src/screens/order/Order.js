@@ -275,6 +275,9 @@ const Order = (props) => {
               </ListItem>
             </ScrollView>
           </Card.Content>
+          <Text style={{fontSize: 18, fontWeight: "bold", marginStart: 20, marginBottom: 15}}>
+            Status Pesanan
+          </Text>
           {status === "Ongoing" ? (
             <Card.Content style={{ marginTop: -10, marginStart: -20 }}>
               <ScrollView

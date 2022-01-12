@@ -52,7 +52,7 @@ const Login = ({ navigation }) => {
         Toast.show({
           topOffset: 30,
           type: "success",
-          text1: "Login Succesful",
+          text1: "Selamat Datang",
         })
     },
     onError(err) {

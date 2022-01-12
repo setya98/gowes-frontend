@@ -17,7 +17,7 @@ export default function MainNavigator({ navigation }) {
       }}
       >
         <Main.Screen 
-          name="Auth"
+          name="Authentication"
           component={AuthNavigator}
           options={{
             title: "",

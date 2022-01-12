@@ -7,30 +7,31 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 // Stacks
 import HomeNavigator from "../HomeNavigator";
-import CartNavigator from "../../CartNavigator";
-import WishlistNavigator from "../../WishlistNavigator";
+import CartNavigator from "../../cart/CartNavigator";
+import WishlistNavigator from "../../wishlist/WishlistNavigator";
 import UserNavigator from "../../user/UserNavigator";
 
-// import CartIcon from "../component/CartIcon";
+// import CartIcon from "../../../component/CartIcon";
 
 const Tab = createBottomTabNavigator();
 
 export default function Main({ navigation }) {
-  const tabOffsetValue = useRef(new Animated.Value(0)).current;
   return (
     <NavigationContainer independent={true}>
       <Tab.Navigator
         initialRouteName="Home"
-          screenOptions={{
-          tabBarShowLabel: false,
-          tabBarHideOnKeyboard: true,
-          headerShown: false,
-          tabBarStyle: {
+        tabBarOptions={{
+          showLabel: false,
+          tabStyle: {
             backgroundColor: "white",
-            bottom: 10,
+          },
+          style: {
             position: "absolute",
+            bottom: 0,
             marginHorizontal: 20,
-            paddingHorizontal: 5,
+            paddingHorizontal: 8,
+            paddingTop: 8,
+            paddingBottom: 8,
             height: 65,
             elevation: 5,
             borderRadius: 20,
@@ -47,7 +48,16 @@ export default function Main({ navigation }) {
         <Tab.Screen
           name="Home"
           component={HomeNavigator}
-          options={{
+          options={({ route }) => ({
+            tabBarVisible: ((route) => {
+              const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+              if (routeName === "Product Detail") {
+                  return false
+              } if (routeName === "Chat") {
+                return false
+              } 
+              return true
+          })(route),
             tabBarIcon: ({ focused }) => (
               <View
                 style={{
@@ -55,7 +65,6 @@ export default function Main({ navigation }) {
                   justifyContent: "center",
                 }}
               >
-            
                 <Image
                   source={require("../../../assets/homepage.png")}
                   resizeMode="contain"
@@ -67,7 +76,7 @@ export default function Main({ navigation }) {
                 />
               </View>
             ),
-          }} 
+          })}
         />
         <Tab.Screen
           name="Cart"
@@ -75,26 +84,26 @@ export default function Main({ navigation }) {
           options={{
             tabBarIcon: ({ focused }) => (
               <View>
-              <View
-                style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Image
-                  source={require("../../../assets/bag.png")}
-                  resizeMode="contain"
+                <View
                   style={{
-                    width: 25,
-                    height: 25,
-                    tintColor: focused ? "#000" : "#8c8c8c",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
-              </View>
-              {/* <CartIcon /> */}
+                >
+                  <Image
+                    source={require("../../../assets/bag.png")}
+                    resizeMode="contain"
+                    style={{
+                      width: 25,
+                      height: 25,
+                      tintColor: focused ? "#000" : "#8c8c8c",
+                    }}
+                  />
+                </View>
+                {/* <CartIcon /> */}
               </View>
             ),
-          }} 
+          }}
         />
         <Tab.Screen
           name="Wishlist"
@@ -105,7 +114,7 @@ export default function Main({ navigation }) {
                 style={{
                   alignItems: "center",
                   justifyContent: "center",
-                  alignContent: "center"
+                  alignContent: "center",
                 }}
               >
                 <Image
@@ -119,18 +128,29 @@ export default function Main({ navigation }) {
                 />
               </View>
             ),
-          }} 
+          }}
         />
         <Tab.Screen
           name="Profile"
           component={UserNavigator}
-          options={{
+          options={({ route }) => ({
+            tabBarVisible: ((route) => {
+              const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+              if (routeName === "Edit Buyer") {
+                  return false
+              } if (routeName === "Seller") {
+                return false
+              } if(routeName === "Order"){
+                return false
+              }
+              return true
+          })(route),
             tabBarIcon: ({ focused }) => (
               <View
                 style={{
                   alignItems: "center",
                   justifyContent: "center",
-                  alignContent: "center"
+                  alignContent: "center",
                 }}
               >
                 <Image
@@ -144,11 +164,9 @@ export default function Main({ navigation }) {
                 />
               </View>
             ),
-          }} 
+          })}
         />
       </Tab.Navigator>
-      
     </NavigationContainer>
   );
 }
-

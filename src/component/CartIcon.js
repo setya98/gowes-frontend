@@ -7,9 +7,9 @@ import { connect } from "react-redux";
 const CartIcon = (props) => {
   return (
     <>
-      {props.cartItems.length ? (
+      {props.item.length ? (
         <Badge style={styles.badge}>
-          <Text style={styles.text}>{props.cartItems.length}</Text>
+          <Text style={styles.text}>{props.item.length}</Text>
         </Badge>
       ) : null}
     </>
@@ -17,9 +17,9 @@ const CartIcon = (props) => {
 };
 
 const mapStateProps = (state) => {
-  const { cartItems } = state;
+  const { item } = state;
   return {
-    cartItems: cartItems,
+    item : item,
   };
 };
 

@@ -34,71 +34,102 @@ const EditBuyer = (props) => {
   const [cityName, setCityName] = useState("");
   const [cityId, setCityId] = useState("");
   const [isCitySet, setIsCity] = useState(false);
-
   const [isSaved, setSave] = useState(false);
-  console.log("this is the logged user", context.user.id);
 
-  const {
-    loading,
-    data: userData,
-    data: cityData,
-  } = useQuery(FETCH_USER_QUERY, {
+  const {loading, data} = useQuery(FETCH_USER_QUERY, {
     variables: {
       userId: context.user.id,
     },
   });
-  const { getUser: currentUser } = userData ? userData : [];
-  const { getCities: cities } = cityData ? cityData : [];
+  const { getUser: currentUser } = data ? data : [];
+  // const { getCities: cities } = cityData ? cityData : [];
 
-  console.log("user@profileCard: ", currentUser);
+  // if (!loading && !isCitySet) {
+  //   setCityName(currentUser.address.cityName);
+  //   setCityId(currentUser.address.cityId);
+  //   setIsCity(true);
+  // }
+  // const handleChange = (value) => {
+  //   setCityName(value.split("-")[0]);
+  //   setCityId(value.split("-")[1]);
+  // };
+  // console.log(cityName, cityId);
 
-  if (!loading && !isCitySet) {
-    setCityName(currentUser.address.cityName);
-    setCityId(currentUser.address.cityId);
-    setIsCity(true);
-  }
-  const handleChange = (value) => {
-    setCityName(value.split("-")[0]);
-    setCityId(value.split("-")[1]);
+  // let userObj = {
+  //   avatar: "",
+  //   name: "",
+  //   email: "",
+  //   phone: "",
+  // };
+
+  // if (currentUser) {
+  //   userObj = {
+  //     name: currentUser.buyer.name,
+  //     email: currentUser.email,
+  //     phone: currentUser.phone,
+  //     cityName: currentUser.address.cityName,
+  //     district: currentUser.address.district,
+  //     postalCode: currentUser.address.postalCode,
+  //     detail: currentUser.address.detail,
+  //   };
+  // }
+
+  // let { onChange, onSubmit, values } = useForm(updateUserProfile, userObj);
+
+  const [values, setValues] = useState({
+    cityName: "Cimahi",
+    cityId: "23",
+    avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
+    name: currentUser.buyer.name,
+    email: currentUser.email,
+    phone: currentUser.phone,
+    // cityName: currentUser.address.cityName,
+    birthDate: "2021-12-12",
+    district: currentUser.address.district,
+    postalCode: currentUser.address.postalCode,
+    detail: currentUser.address.detail,
+  });
+
+  const onChange = (key, val) => {
+    setValues({ ...values, [key]: val });
   };
-  console.log(cityName, cityId);
 
-  let userObj = {
-    avatar: "",
-    name: "",
-    email: "",
-    phone: "",
+  const onSubmit = (event) => {
+    event.preventDefault();
+    updateProfile();
   };
 
-  if (currentUser) {
-    userObj = {
-      name: currentUser.buyer.name,
-      email: currentUser.email,
-      phone: currentUser.phone,
-      cityName: currentUser.address.cityName,
-      district: currentUser.address.district,
-      postalCode: currentUser.address.postalCode,
-      detail: currentUser.address.detail,
-    };
-  }
+  const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION, {
+    update(_, { data: { updateUserProfile: userData } }) {
+      userData.name = userData.buyer.name;
+      context.login(userData)
+      console.log("updated")
+      setErrors({});
+      props.navigation.navigate("Buyer");
+      Toast.show({
+        topOffset: 50,
+        type: "success",
+        text1: "Profil Berhasil Tersimpan",
+      });
+    },
+    onError(err) {
+      setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      setSave(true);
+    },
+    variables: {...values}
+  });
 
-  let { onChange, onSubmit, values } = useForm(updateUserProfile, userObj);
-
-  const [avatar, setAvatar] = useState(
-    "https://react.semantic-ui.com/images/avatar/large/molly.png"
-  );
-
-  const saveAlert = () =>
-    Alert.alert("Ubah Data", "Kamu yakin ingin ubah data?", [
-      {
-        text: "Batal",
-        onPress: () => navigation.navigate("Edit Buyer"),
-      },
-      {
-        text: "Simpan",
-        onPress: onSubmit,
-      },
-    ]);
+  // const saveAlert = () =>
+  //   Alert.alert("Ubah Data", "Kamu yakin ingin ubah data?", [
+  //     {
+  //       text: "Batal",
+  //       onPress: () => navigation.navigate("Edit Buyer"),
+  //     },
+  //     {
+  //       text: "Simpan",
+  //       onPress: onSubmit,
+  //     },
+  //   ]);
 
   const openCamera = async () => {
     let result = await ImagePicker.launchCameraAsync();
@@ -158,32 +189,11 @@ const EditBuyer = (props) => {
     }
   };
 
-  const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION, {
-    update(_, { data: { updateUserProfile: userData } }) {
-      userData.name = userData.buyer.name;
-      setErrors({});
-      props.navigation.dispatch(CommonActions.goBack());
-      Toast.show({
-        topOffset: 50,
-        type: "success",
-        text1: "Update Profil Tersimpan",
-      });
-    },
-    onError(err) {
-      setErrors(err.graphQLErrors[0].extensions.exception.errors);
-      setSave(true);
-    },
-    variables: {
-      ...values,
-      cityName: cityName,
-      cityId: cityId,
-      avatar: avatar,
-    },
-  });
+  
 
-  function updateUserProfile() {
-    updateProfile();
-  }
+  // function updateUserProfile() {
+  //   updateProfile();
+  // }
 
   const renderInner = () => (
     <View style={styles.panel}>
@@ -272,7 +282,7 @@ const EditBuyer = (props) => {
                 }}
               >
                 <ImageBackground
-                  source={{ uri: loading ? avatar : currentUser.buyer.avatar }}
+                  // source={{ uri: loading ? avatar : currentUser.buyer.avatar }}
                   style={{ height: 100, width: 100, marginTop: 15, backgroundColor: "#8c8c8c", borderRadius: 25 }}
                   imageStyle={{ borderRadius: 25 }}
                 >
@@ -313,6 +323,7 @@ const EditBuyer = (props) => {
                 style={{ marginStart: 15, marginTop: 12 }}
               />
               <TextInput
+                name="name"
                 placeholder="Nama"
                 placeholderTextColor="#666666"
                 autoCorrect={false}
@@ -335,13 +346,12 @@ const EditBuyer = (props) => {
               />
               <TextInput
                 name="phone"
-                placeholder="Nomer telepon"
+                placeholder="Nomer Telepon"
                 placeholderTextColor="#666666"
                 keyboardType="number-pad"
-                autoCorrect={false}
                 value={values.phone}
                 onChangeText={(val) => onChange("phone", val)}
-                error={errors.phone ? true : false}
+                autoCorrect={false}
                 style={[
                   styles.textInput,
                   {
@@ -377,7 +387,7 @@ const EditBuyer = (props) => {
             <View style={{ paddingVertical: 20, marginStart: 15 }}>
               <Text style={{ fontSize: 20, fontWeight: "bold" }}>Alamat</Text>
             </View>
-            <View style={styles.action}>
+            {/* <View style={styles.action}>
               <FontAwesome
                 name="map-marker"
                 color={colors.text}
@@ -405,7 +415,7 @@ const EditBuyer = (props) => {
                     ))}
                 </Picker>
               </Item>
-            </View>
+            </View> */}
             <View style={styles.action}>
               <FontAwesome
                 name="map-marker"
@@ -473,7 +483,7 @@ const EditBuyer = (props) => {
                 ]}
               />
             </View>
-            <Button style={styles.commandButton} onPress={saveAlert}>
+            <Button style={styles.commandButton} onPress={onSubmit}>
               <Text style={styles.panelButtonTitle}>Simpan</Text>
             </Button>
           </View>

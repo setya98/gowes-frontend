@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
-import { Content, Left, Body, ListItem, Thumbnail, Text } from "native-base";
+import { Content, Left, Body, ListItem, Text } from "native-base";
+import { Avatar } from "react-native-paper";
 
 var { width } = Dimensions.get("window");
 
@@ -8,7 +9,7 @@ const SearchedProduct = (props) => {
   const { productsFiltered } = props;
   return (
     <Content style={{ width: width }}>
-      <View>
+    <View>
       {productsFiltered.length > 0 ? (
         productsFiltered.map((item) => (
           <ListItem noBorder
@@ -19,7 +20,8 @@ const SearchedProduct = (props) => {
             avatar
           >
             <Left>
-              <Thumbnail
+              <Avatar.Image
+                size={55}
                 source={{
                   uri: item.images[0].downloadUrl
                     ? item.images[0].downloadUrl

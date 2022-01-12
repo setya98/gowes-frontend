@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 
-import Checkout from '../../screens/checkout/Checkout'
+import Checkout from '../../screens/checkout/CheckoutScreen'
 import Payment from '../../screens/checkout/Payment'
 import Confirm from '../../screens/checkout/Confirm'
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -10,61 +10,162 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ImageBackground
+  ImageBackground,
+  Picker,
 } from "react-native";
-import {useTheme} from 'react-native-paper';
+import { useTheme } from "react-native-paper";
 import { Text } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
+import Toast from "react-native-toast-message";
+
+import { useMutation, useQuery } from "@apollo/client";
+import { AuthContext } from "../../../context/auth";
+import {
+  UPDATE_ITEM_MUTATION,
+  DELETE_ITEM_MUTATION,
+  FETCH_SINGLE_ITEM_QUERY,
+} from "../../../util/graphql";
 
 var { height, width } = Dimensions.get("window");
 
 const EditProduct = (props) => {
-    const {colors} = useTheme();
+  const itemId = props.route.params.item.id;
+  const product = props.route.params.product;
+  const itemData = props.route.params.item;
+  const { colors } = useTheme();
+  const context = useContext(AuthContext);
+  const [errors, setErrors] = useState({});
+  const [isSaved, setSave] = useState(false);
+  const [image, setImage] = useState(null);
+  
+  // console.log("product", product.getItem)
 
-    const [image, setImage] = useState(null);
+  // console.log(data)
 
-    const saveAlert = () =>
-    Alert.alert("Hapus Produk", "Kamu yakin ingin hapus produk?", [
+  // const saveAlert = () =>
+  // Alert.alert("Hapus Produk", "Kamu yakin ingin hapus produk?", [
+  //   {
+  //     text: "Batal",
+  //     onPress: () => console.log("Cancel Pressed"),
+  //   },
+  //   {
+  //     text: "Simpan",
+  //     onPress: () => console.log("OK Pressed")
+  //   },
+  // ]);
+
+  const [values, setValues] = useState({
+    name: product.getItem.name,
+    price: product.getItem.price,
+    stock: product.getItem.stock,
+    category: product.getItem.category,
+    condition: product.getItem.condition,
+    weight: product.getItem.weight,
+    description: product.getItem.description,
+    length: product.getItem.dimension.length,
+    width: product.getItem.dimension.width,
+    height: product.getItem.dimension.height,
+    itemId: itemId,
+    images: [
       {
-        text: "Batal",
-        onPress: () => console.log("Cancel Pressed"),
+        downloadUrl:
+          "https://react.semantic-ui.com/images/avatar/large/molly.png",
       },
       {
-        text: "Simpan",
-        onPress: () => console.log("OK Pressed")
+        downloadUrl:
+          "https://react.semantic-ui.com/images/avatar/large/molly.png",
       },
-    ]);
+    ],
+  });
 
+  const onChange = (key, val) => {
+    setValues({ ...values, [key]: val });
+  };
 
-    const pickImage = async () => {
-        // No permissions request is necessary for launching the image library
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 1,
-        });
-    
-        console.log(result);
-    
-        if (!result.cancelled) {
-          setImage(result.uri);
-        }
-      };
+  const onSubmit = (event) => {
+    event.preventDefault();
+    // console.log(props.route.params.item.id);
+    // console.log(itemData)
+    console.log(product.getItem.price);
+    // console.log(typeof(values.condition));
+    editItem();
+  };
+
+  const [updateItem] = useMutation(UPDATE_ITEM_MUTATION, {
+    update(_, { data: { updateItem: updatedItem } }) {
+      setErrors({});
+      Toast.show({
+        topOffset: 60,
+        type: "success",
+        text1: "Produk Berhasil Tersimpan",
+      });
+      props.route.params.refetchItems();
+      props.navigation.navigate("Seller");
+    },
+    onError(err) {
+      console.log("error");
+      setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      console.log(err.graphQLErrors[0]);
+    },
+    variables: values,
+  });
+
+  function editItem() {
+    values.price = parseInt(values.price);
+    values.stock = parseInt(values.stock);
+    values.weight = parseInt(values.weight);
+    values.length = parseInt(values.length);
+    values.width = parseInt(values.width);
+    values.height = parseInt(values.height);
+    updateItem();
+  }
+
+  // const [deleteItem] = useMutation(DELETE_ITEM_MUTATION, {
+  //   update() {
+  //     Toast.show({
+  //       topOffset: 60,
+  //       type: "success",
+  //       text1: "Produk Berhasil Dihapus",
+  //     });
+  //     props.route.params.refetchItems();
+  //     props.navigation.navigate("Seller");
+  //   },
+  //   variables: { itemId: itemId },
+  // });
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
+  };
 
   return (
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
       <View style={styles.header}>
-        <FontAwesome onPress={() => props.navigation.goBack()}
-        name="chevron-left" size={18} style={{top: 4}} />
+        <FontAwesome
+          onPress={() => props.navigation.goBack()}
+          name="chevron-left"
+          size={18}
+          style={{ top: 4 }}
+        />
         <Text
           style={{
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 105
+            marginStart: 105,
           }}
         >
           Edit Produk
@@ -72,157 +173,263 @@ const EditProduct = (props) => {
       </View>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 190, backgroundColor: '#f2f2f2' }}
+        contentContainerStyle={{
+          paddingBottom: 190,
+          backgroundColor: "#f2f2f2",
+        }}
       >
-        
         <Animated.View>
-            <View style={{alignItems: 'center', marginTop: 20}}>
-                <TouchableOpacity onPress={pickImage} >
-               
-                    <View style={{
-                        height: 100,
-                        width: 100,
-                        borderRadius: 15,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}>
-                        <ImageBackground source={require('../../../assets/store.png')}
-                        style={{height: 100, width:100, borderRadius: 15}}
-                        >
-                            <View style={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}>
-                                <Image source={require('../../../assets/plus.png')} style={{
-                                    opacity: 0.8,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    tintColor: '#fff',
-                                    width: 25,
-                                    height: 25
-                                }}  />
-                            </View>
-                        </ImageBackground>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.detailContainer}>
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <TouchableOpacity onPress={pickImage}>
+              <View
+                style={{
+                  height: 100,
+                  width: 100,
+                  borderRadius: 15,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ImageBackground
+                  source={require("../../../assets/store.png")}
+                  style={{ height: 100, width: 100, borderRadius: 15 }}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Image
+                      source={require("../../../assets/plus.png")}
+                      style={{
+                        opacity: 0.8,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        tintColor: "#fff",
+                        width: 25,
+                        height: 25,
+                      }}
+                    />
+                  </View>
+                </ImageBackground>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.detailContainer}>
             <View style={{ paddingVertical: 20, marginStart: 15 }}>
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Detail Produk</Text>
-        </View>
+              <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                Detail Produk
+              </Text>
+            </View>
             <View style={styles.action}>
-          <TextInput
-            name="name"
-            placeholder="Nama"
-            placeholderTextColor="#666666"
-            autoCorrect={false}
-            style={[styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.action}>
-            <Text style={{marginStart: 15, marginTop: 14, marginEnd: -10, color: "#000", fontWeight: "700"}}>Rp </Text>
-          <TextInput
-            name="price"
-            placeholder="Harga"
-            placeholderTextColor="#666666"
-            keyboardType="number-pad"
-            autoCorrect={false}
-            style={[
-              styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.action}>
-          <TextInput
-            name="stock"
-            placeholder="Stok"
-            placeholderTextColor="#666666"
-            keyboardType="number-pad"
-            autoCorrect={false}
-            style={[
-              styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.action}>
-          <TextInput
-            name="category"
-            placeholder="Kategori"
-            placeholderTextColor="#666666"
-            autoCorrect={false}
-            style={[styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.action}>
-          <TextInput
-            name="condition"
-            placeholder="Kondisi Barang"
-            placeholderTextColor="#666666"
-            autoCorrect={false}
-            style={[
-              styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.action}>
-          <TextInput
-            name="weight"
-            placeholder="Berat"
-            placeholderTextColor="#666666"
-            keyboardType="number-pad"
-            autoCorrect={false}
-            style={[
-              styles.textInput,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.actionDescription}>
-          <TextInput
-            name="description"
-            placeholder="Deskripsi Barang"
-            multiline={true}
-            numberOfLines={5}
-            placeholderTextColor="#666666"
-            keyboardType="email-address"
-            autoCorrect={false}
-            style={[
-              styles.textInputDescription,
-              {
-                color: colors.text,
-              },
-            ]}
-          />
-        </View>
-        </View>
-        <View style={{flexDirection: "row", justifyContent: "space-between"}}>
-        <TouchableOpacity style={styles.commandButton} onPress={saveAlert}>
-          <Text style={{fontSize: 20, fontWeight: "bold", color: "#000"}}>Hapus</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.commandButtonSave} onPress={saveAlert}>
-          <Text style={styles.panelButtonTitle}>Simpan</Text>
-        </TouchableOpacity>
-        </View>
+              <TextInput
+                name="name"
+                placeholder="Nama"
+                placeholderTextColor="#666666"
+                value={values.name}
+                onChangeText={(val) => onChange("name", val)}
+                autoCorrect={false}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.action}>
+              <Text
+                style={{
+                  marginStart: 15,
+                  marginTop: 14,
+                  marginEnd: -10,
+                  color: "#000",
+                  fontWeight: "700",
+                }}
+              >
+                Rp{" "}
+              </Text>
+              <TextInput
+                name="price"
+                placeholder="Harga"
+                placeholderTextColor="#666666"
+                keyboardType="number-pad"
+                autoCorrect={false}
+                value={values.price}
+                onChangeText={(val) => onChange("price", val)}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.action}>
+              <TextInput
+                name="stock"
+                placeholder="Stok"
+                placeholderTextColor="#666666"
+                keyboardType="number-pad"
+                autoCorrect={false}
+                value={values.stock}
+                onChangeText={(val) => onChange("stock", val)}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+            <View
+              style={{
+                backgroundColor: "#f2f2f2",
+                marginStart: 15,
+                marginEnd: 15,
+                marginBottom: 10,
+                borderRadius: 15,
+                paddingStart: 7,
+              }}
+            >
+              <Picker
+                name="category"
+                value={values.category}
+                onValueChange={(val) => onChange("category", val)}
+              >
+                <Picker.Item label="Parts" value="Parts" />
+                <Picker.Item label="Accessories" value="Accessories" />
+                <Picker.Item label="Apparel" value="Apparel" />
+              </Picker>
+            </View>
+            <View
+              style={{
+                backgroundColor: "#f2f2f2",
+                marginStart: 15,
+                marginEnd: 15,
+                marginBottom: 10,
+                borderRadius: 15,
+                paddingStart: 7,
+              }}
+            >
+              <Picker
+                name="condition"
+                value={values.condition}
+                onValueChange={(val) => onChange("condition", val)}
+              >
+                <Picker.Item label="New" value="New" />
+                <Picker.Item label="Used" value="Used" />
+              </Picker>
+            </View>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="weight"
+                  placeholder="Berat"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.weight}
+                  onChangeText={(val) => onChange("weight", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="length"
+                  placeholder="Panjang"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.length}
+                  onChangeText={(val) => onChange("length", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="height"
+                  placeholder="Tinggi"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.height}
+                  onChangeText={(val) => onChange("height", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.actionDimension}>
+                <TextInput
+                  name="width"
+                  placeholder="Lebar"
+                  placeholderTextColor="#666666"
+                  keyboardType="number-pad"
+                  autoCorrect={false}
+                  value={values.width}
+                  onChangeText={(val) => onChange("width", val)}
+                  style={[
+                    styles.textInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={styles.actionDescription}>
+              <TextInput
+                name="description"
+                placeholder="Deskripsi Barang"
+                multiline={true}
+                numberOfLines={5}
+                placeholderTextColor="#666666"
+                keyboardType="email-address"
+                autoCorrect={false}
+                value={values.description}
+                onChangeText={(val) => onChange("description", val)}
+                style={[
+                  styles.textInputDescription,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <TouchableOpacity style={styles.commandButton} onPress={onSubmit}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "#000" }}>
+                Hapus
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.commandButtonSave}
+              onPress={onSubmit}
+            >
+              <Text style={styles.panelButtonTitle}>Simpan</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -240,18 +447,18 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     flexDirection: "row",
     height: "8%",
-    marginTop: 10
+    marginTop: 10,
   },
   panelButtonTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   commandButton: {
     padding: 12,
     borderRadius: 15,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
     width: "40%",
     marginTop: 30,
     marginStart: 15,
@@ -259,12 +466,12 @@ const styles = StyleSheet.create({
   commandButtonSave: {
     padding: 12,
     borderRadius: 15,
-    backgroundColor: '#000',
-    alignItems: 'center',
+    backgroundColor: "#000",
+    alignItems: "center",
     width: "40%",
     alignSelf: "flex-end",
     marginTop: 30,
-    marginEnd: 15
+    marginEnd: 15,
   },
   detailContainer: {
     flexGrow: 1,
@@ -321,27 +528,41 @@ const styles = StyleSheet.create({
     color: "white",
   },
   action: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 5,
     marginBottom: 10,
     height: 45,
     marginStart: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
-    backgroundColor: '#f2f2f2',
+    borderBottomColor: "transparent",
+    backgroundColor: "#f2f2f2",
     borderRadius: 15,
     marginEnd: 15,
     paddingBottom: 5,
   },
-  actionDescription: {
-    flexDirection: 'row',
+  actionDimension: {
+    flexDirection: "row",
     marginTop: 5,
     marginBottom: 10,
-    height: 175,
+    height: 45,
     marginStart: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
-    backgroundColor: '#f2f2f2',
+    borderBottomColor: "transparent",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 15,
+    marginEnd: 15,
+    paddingBottom: 5,
+    width: "40%",
+  },
+  actionDescription: {
+    flexDirection: "row",
+    marginTop: 5,
+    marginBottom: 10,
+    height: 135,
+    marginStart: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "transparent",
+    backgroundColor: "#f2f2f2",
     borderRadius: 15,
     marginEnd: 15,
     paddingBottom: 5,
@@ -350,17 +571,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 7,
     paddingLeft: 15,
-    color: '#000',
-    fontWeight: '700',
-    fontSize: 16
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 16,
   },
   textInputDescription: {
     flex: 1,
-    marginTop: -120,
+    marginTop: -80,
     paddingLeft: 15,
-    color: '#000',
-    fontWeight: '700',
-    fontSize: 16
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
 

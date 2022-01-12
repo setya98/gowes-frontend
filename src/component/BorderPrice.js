@@ -1,10 +1,11 @@
 import * as React from "react";
 import { StyleSheet, View } from "react-native";
 import { Title } from "react-native-paper";
+import { currencyIdrConverter } from "../util/extensions";
 
 const BorderPrice = (props) => (
   <View style={styles.borderPrice}>
-    <Title style={[styles.textPrice, props.style]}>Rp {props.title}</Title>
+    <Title style={[styles.textPrice, props.style]}>Rp {currencyIdrConverter(props.title, 0, ".", ",")}</Title>
     </View>
     
 );

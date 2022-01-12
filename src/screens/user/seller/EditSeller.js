@@ -33,7 +33,6 @@ const EditSeller = (props) => {
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
-  console.log("this is the logged user", context.user.id);
 
   const {loading, data} = useQuery(FETCH_USER_QUERY, {
     variables: {
@@ -41,11 +40,6 @@ const EditSeller = (props) => {
     },
   });
   const { getUser: currentUser } = data ? data : [];
-  const [avatar, setAvatar] = useState(
-    "https://react.semantic-ui.com/images/avatar/large/molly.png"
-  );
-
-  console.log("user@profileCard: ", currentUser);
 
   const openCamera = async () => {
     let result = await ImagePicker.launchCameraAsync();
@@ -105,26 +99,51 @@ const EditSeller = (props) => {
     }
   };
 
-  let userObj = {
-    avatar: "",
+  // let userObj = {
+  //   avatar: "",
+  //   username: currentUser.seller.username,
+  //   description: currentUser.seller.description,
+  // };
+
+  // if (currentUser) {
+  //   userObj = {
+  //     username: currentUser.seller.username,
+  //     description: currentUser.seller.description,
+  //   };
+  // }
+
+  // let { onChange, onSubmit, values } = useForm(updateSellerProfile, userObj);
+
+  const [values, setValues] = useState({
+    avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
     username: currentUser.seller.username,
     description: currentUser.seller.description,
+  });
+
+  // if(currentUser) {
+  //   setValues({
+  //     avatar: "",
+  //     username: currentUser.seller.username,
+  //     description: currentUser.seller.description,
+  //   })
+  // }
+
+  const onChange = (key, val) => {
+    setValues({ ...values, [key]: val });
   };
 
-  if (currentUser) {
-    userObj = {
-      username: currentUser.seller.username,
-      description: currentUser.seller.description,
-    };
-  }
+  const onSubmit = (event) => {
+    event.preventDefault();
+    console.log(values)
+    sellerProfileUpdate();
+  };
 
-  let { onChange, onSubmit, values } = useForm(updateSellerProfile, userObj);
 
   const [sellerProfileUpdate] = useMutation(UPDATE_SELLER_PROFILE_MUTATION, {
     update(_, { data: { updateSellerProfile: sellerData } }) {
-      sellerData.username = sellerData.seller.username;
-      context.login(sellerData)
-      setSave(true)
+      // sellerData.username = sellerData.seller.username;
+      // context.login(sellerData)
+      console.log("updated")
       setErrors({});
       props.navigation.navigate("Seller");
       Toast.show({
@@ -137,9 +156,10 @@ const EditSeller = (props) => {
       setErrors(err.graphQLErrors[0].extensions.exception.errors);
       setSave(true);
     },
-    variables: {
-      values,
-    },
+    // variables: {
+    //   values,
+    // },
+    variables: values
   });
 
   function updateSellerProfile() {

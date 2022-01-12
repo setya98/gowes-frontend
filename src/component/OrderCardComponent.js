@@ -8,18 +8,18 @@ function OrderCardComponent(props) {
     console.log("test", props.order)
     const order = props.order
     
-    let productPrice;
-    let productQty;
+    let itemPrice;
+    let amountItem;
   
     {
       order.items.map((item) => {
-        productPrice = item.price;
-        productQty = item.productQty;
+        itemPrice = item.price;
+        amountItem = item.amountItem;
       });
     }
     const shippingCost = order.shipping.shippingCost;
   
-    const grossAmount = productPrice * productQty;
+    const grossAmount = itemPrice * amountItem;
     const totalPrice = grossAmount + shippingCost;
 
     return (

@@ -260,6 +260,9 @@ export const FETCH_USER_CART_QUERY = gql`
         name
         price
         stock
+        category
+        condition
+        weight
         images {
           downloadUrl
         }
@@ -293,6 +296,7 @@ export const FETCH_USER_CART_QUERY = gql`
     }
   }
 `;
+
 export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
   query($userId: ID!) {
     getUserCartItemsCheckout {
@@ -302,6 +306,8 @@ export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
         weight
         name
         price
+        category
+        condition
         stock
         images {
           downloadUrl
@@ -428,6 +434,7 @@ export const ADD_TO_CART_MUTATION = gql`
     }
   }
 `;
+
 export const EDIT_CART_MUTATION = gql`
   mutation editCartItem(
     $itemId: ID!
@@ -448,6 +455,7 @@ export const EDIT_CART_MUTATION = gql`
     }
   }
 `;
+
 export const EDIT_CHECKED_MUTATION = gql`
   mutation updateCheckCart($itemIds: [ID]!, $isChecked: Boolean!) {
     updateCheckCart(checkedCart: { itemIds: $itemIds, isChecked: $isChecked })
@@ -475,7 +483,7 @@ export const FETCH_CHAT_MESSAGES_QUERY = gql`
       id
       content
       sentAt
-      user
+      user 
       item {
         id
         name
@@ -523,6 +531,7 @@ export const ADD_MESSAGE = gql`
     }
   }
 `;
+
 export const FETCH_CITIES_QUERY = gql`
   {
     getCities {
@@ -844,6 +853,8 @@ export const FETCH_ITEM_SELLER_QUERY = gql`
       id
       name
       price
+      condition
+      category
       createdAt
       description
       weight

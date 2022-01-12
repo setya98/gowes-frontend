@@ -1,14 +1,14 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack"
 
-import Cart from "../screens/cart/Cart";
-import CheckoutNavigator from "./checkout/CheckoutNavigator";
+import Cart from "../../screens/cart/Cart";
+import Checkout from "../../screens/cart/Checkout";
 
 const Stack = createStackNavigator()
 
 export default function CartNavigator({ navigation }) {
     return (
-        <Stack.Navigator>
+        <Stack.Navigator >
             <Stack.Screen
                 name='Cart'
                 component={Cart}
@@ -16,8 +16,8 @@ export default function CartNavigator({ navigation }) {
             />
             <Stack.Screen
                 name='Checkout'
-                component={CheckoutNavigator}
-                options={{ title : "" }}
+                component={Checkout}
+                options={{ title : "", headerShown: false }}
             />
         </Stack.Navigator>
     )

@@ -97,15 +97,15 @@ const Seller = (props) => {
           <TouchableWithoutFeedback
           onPress={() => props.navigation.navigate("Edit Seller")}
           >
-            <View style={{ flexDirection: "column" }}>
             <Text style={{ fontSize: 20, color: "#000",fontWeight: "700", marginStart: 20, letterSpacing: 0.6 }}>
             {currentUser.seller.username}
             </Text>
-          </View>
           </TouchableWithoutFeedback>
-          <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 28, marginStart: -45}} />
+          <View style={{flexDirection: "row", width: 100, marginStart: -75}}>
+          <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 28, }} />
           <Text style={{color: "#595959", fontWeight: "bold", marginStart: 7, marginTop: 26}}>{currentUser.address.cityName}</Text>
-          <StarIcon name="star" size={20} color={"#F18c06"} style={{marginStart: -92, marginTop: 55, }}/> 
+          </View>
+          <StarIcon name="star" size={20} color={"#F18c06"} style={{marginStart: -105, marginTop: 55, }}/> 
           <Text style={{color: "#000", top: 54, fontWeight: "bold", fontSize: 22, marginStart: 5}}>4.8</Text>
           <Text style={{color: "#595959", top: 58, fontWeight: "bold", marginStart: 7}}>Rating</Text>
           </View>

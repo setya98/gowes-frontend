@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -8,21 +8,93 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
 } from "react-native";
-import { Container, Item, Text } from "native-base";
-import Icon from "react-native-vector-icons/FontAwesome";
-import TitleHeader from "../../component/TitleHeader";
+import { Container, Text, Button } from "native-base";
+import { Avatar, Divider } from "react-native-paper";
+import Icon from "react-native-vector-icons/AntDesign";
+import Ionicons from "react-native-vector-icons/Ionicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome"
+import Toast from "react-native-toast-message"
+import Swiper from "react-native-swiper";
+import Animated from "react-native-reanimated";
+
+import TitleHeader from "../../component/TitleHeader";
 import BorderWishlist from "../../component/BorderWishlist";
 import BorderPrice from "../../component/BorderPrice";
+import ImageSlide from "../../component/ImageSlide";
+
 import { connect } from "react-redux";
-import * as actions from "../../../Redux/actions/cartAction";
-import * as actionsWishlist from "../../../Redux/actions/wishlistAction";
+
+import { useMutation, useQuery } from "@apollo/client"
+import { AuthContext } from "../../context/auth"
+import {
+  ADD_TO_CART_MUTATION,
+  FETCH_CART_QUERY,
+  FETCH_USER_CART_QUERY
+} from "../../util/graphql"
+import ButtonWishlist from "../../component/ButtonWishlist";
+
 
 var { height } = Dimensions.get("window");
 
 const ProductDetail = (props) => {
   const [item, setItem] = useState(props.route.params.item);
-  const [availability, setAvailability] = useState("");
+  const itemId = props.route.params.item
+  const [amountItem, setAmountItem] = useState(1)
+  const[errors, setErrors] = useState({})
+
+  console.log(props.route.params.item)
+  const user = useContext(AuthContext)
+
+  const [addToCart] = useMutation(ADD_TO_CART_MUTATION, {
+    variables: {
+      itemId: item.id,
+      isChecked: false,
+      amountItem: amountItem
+    },
+    update(proxy, result) {
+      const data = proxy.readQuery({
+        query: FETCH_USER_CART_QUERY
+      })
+
+      proxy.writeQuery({
+        query: FETCH_USER_CART_QUERY,
+        data: {
+          getUserCartItems: [
+            result.data.addCartItem,
+            ...data.getUserCartItems
+          ]
+        }
+      })
+
+      console.log("hmmm")
+    },
+    onError(err) {
+      setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      console.log(errors);
+    },
+  })
+
+  const { loading, data: userCartData } = useQuery(FETCH_CART_QUERY,{
+    variables: {
+      itemId: item.id
+    }
+  })
+  const { getUserCartItem: itemCart } = userCartData ? userCartData : []
+  let itemAmountCart = 0
+
+  if (!loading && itemCart) {
+    itemAmountCart = itemCart.amountItem
+  }
+  const AnimatedView = Animated.View
+
+  function addItemCart() {
+    addToCart();
+    Toast.show({
+      topOffset: 30,
+      type: "success",
+      text1: "Produk ditambahkan ke bag",
+    });
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -31,7 +103,7 @@ const ProductDetail = (props) => {
               onPress={() => props.navigation.goBack()}
               name="chevron-left"
               size={18}
-              style={{ top: 4 }}
+              style={{ marginTop: 14 }}
             />
         <TouchableWithoutFeedback
           onPress={() => props.navigation.navigate("Cart")}
@@ -49,15 +121,9 @@ const ProductDetail = (props) => {
       >
         <Container>
           <View style={styles.ImageContainer}>
-            <Image
-              source={{
-                uri: item.image
-                  ? item.image
-                  : "https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png",
-              }}
-              resizeMode="contain"
-              style={styles.image}
-            />
+            <Swiper style={{ height: 260 }}>
+            <Image source={{ uri: item.images[0].downloadUrl }} style={{width: "100%", height: 260, resizeMode: "contain"}} />
+            </Swiper>
           </View>
           <View style={styles.detailContainer}>
             <View style={styles.line} />
@@ -65,16 +131,13 @@ const ProductDetail = (props) => {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <BorderPrice title={item.price} />
-              <View style={{marginTop: 25, marginEnd: 20}}>
+              {/* <View style={{marginTop: 25, marginEnd: 20}}>
               <TouchableWithoutFeedback
-                onPress={() => {
-                  props.addItemToCart(props);
-                  console.log('does not work');
-                }}
+                
               >
-                <BorderWishlist />
+                <ButtonWishlist />
               </TouchableWithoutFeedback>
-              </View>
+              </View> */}
             </View>
             <TitleHeader style={styles.text} title={item.name} />
             <View style={styles.headerContainer}>
@@ -98,7 +161,7 @@ const ProductDetail = (props) => {
                   color: "#000",
                 }}
               >
-                Terjual
+                Tersisa
               </Text>
               <Text
                 style={{
@@ -108,55 +171,53 @@ const ProductDetail = (props) => {
                   color: "#000",
                 }}
               >
-                15
+                {item.stock} 
               </Text>
             </View>
-
-            <View style={{ flexDirection: "row" }}>
-              <Image
-                source={require("../../assets/man.png")}
-                resizeMode="contain"
+            <Divider style={{height: 1, marginTop: 25}}></Divider>
+              <Avatar.Image
+                size={40}
+                source={{ uri: "https://react.semantic-ui.com/images/avatar/large/molly.png" }}
                 style={{
-                  width: 50,
-                  height: 50,
                   marginStart: 15,
-                  marginTop: 35,
+                  marginTop: 28,
                   marginEnd: 10,
                   borderRadius: 60,
                 }}
               />
+            <View style={{ flexDirection: "column", height: 40 }}>
               <Text
                 style={{
-                  marginTop: 37,
-                  marginStart: 15,
-                  fontWeight: "600",
-                  color: "#595959",
+                  marginStart: 70,
+                  marginTop: -42,
+                  fontWeight: "bold",
+                  color: "#000",
                   fontSize: 18,
                 }}
               >
-                Makmur Jaya
+                {item.user.seller.username}
               </Text>
-              <Icon
-                name="star"
+              <View style={{flexDirection: "row"}}>
+              <FontAwesome
+                name="map-marker"
                 size={15}
-                color={"#F18c06"}
-                style={{ marginTop: 65, marginStart: -100 }}
+                color={"#595959"}
+                style={{marginStart: 70, marginTop: 10}}
               />
               <Text
                 style={{
-                  marginStart: 5,
-                  marginTop: 62,
-                  fontSize: 20,
-                  fontWeight: "800",
+                  marginStart: 8,
+                  fontSize: 16,
+                  fontWeight: "500",
+                  color: "#595959",
+                  marginTop: 8
                 }}
               >
-                4.8
+                {item.user.address.cityName}
               </Text>
-              <Text style={{ marginTop: 65, marginStart: 6, color: "#595959" }}>
-                Rating
-              </Text>
+              </View>
             </View>
-
+            <Divider style={{height: 1}}></Divider>
             <View style={{ flexDirection: "row" }}>
               <Image
                 source={require("../../assets/box.png")}
@@ -166,17 +227,18 @@ const ProductDetail = (props) => {
                   height: 20,
                   marginStart: 20,
                   marginTop: 30,
+                  tintColor: "#595959"
                 }}
               />
               <Text
                 style={{
                   marginTop: 30,
                   marginStart: 15,
-                  fontWeight: "400",
-                  color: "#333333",
+                  fontWeight: "bold",
+                  color: "#595959",
                 }}
               >
-                New
+                {item.condition}
               </Text>
               <Image
                 source={require("../../assets/settings.png")}
@@ -184,19 +246,20 @@ const ProductDetail = (props) => {
                 style={{
                   width: 23,
                   height: 23,
-                  marginStart: 80,
+                  marginStart: 40,
                   marginTop: 30,
+                  tintColor: "#595959"
                 }}
               />
               <Text
                 style={{
-                  marginTop: 33,
-                  marginStart: 15,
-                  fontWeight: "400",
-                  color: "#333333",
+                  marginTop: 31,
+                  marginStart: 10,
+                  fontWeight: "bold",
+                  color: "#595959",
                 }}
               >
-                Parts
+                {item.category}
               </Text>
             </View>
             <View style={{ flexDirection: "row" }}>
@@ -209,25 +272,26 @@ const ProductDetail = (props) => {
                   marginStart: 20,
                   marginTop: 20,
                   marginBottom: 10,
+                  tintColor: "#595959"
                 }}
               />
               <Text
                 style={{
                   marginTop: 22,
                   marginStart: 15,
-                  fontWeight: "400",
-                  color: "#333333",
+                  fontWeight: "bold",
+                  color: "#595959",
                 }}
               >
-                500 Gram
+                {item.weight, "-"}  gr
               </Text>
             </View>
-
+            <Divider style={{height: 1, marginTop: 25}}></Divider>
             <Text
               style={{
                 marginTop: 30,
                 marginLeft: 15,
-                fontWeight: "800",
+                fontWeight: "bold",
                 fontSize: 22,
                 letterSpacing: 0.3,
               }}
@@ -238,8 +302,8 @@ const ProductDetail = (props) => {
               style={{
                 marginLeft: 15,
                 marginTop: 25,
-                fontWeight: "500",
-                color: "#333333",
+                fontWeight: "700",
+                color: "#595959",
               }}
             >
               {item.description}
@@ -248,33 +312,17 @@ const ProductDetail = (props) => {
         </Container>
       </ScrollView>
       <View style={styles.bottomHeader}>
-        <View style={styles.btnCart}>
-          <Icon name="plus" size={25} style={{ color: "#fff" }} />
-          <Text
-            style={{
-              marginLeft: 15,
-              fontSize: 20,
-              fontWeight: "700",
-              color: "#fff",
-            }}
-          >
-            Add To Cart
-          </Text>
-        </View>
+        <Button style={{backgroundColor: "#fff", borderRadius: 20, borderColor: "#000", width: 90, justifyContent: "center", alignSelf: "center", marginStart: 15}}>
+          <Ionicons name="chatbox-ellipses" size={25} />
+        </Button>
+        <Button style={styles.btnCart} onPress={addItemCart}>
+          <Icon name="plus" size={16} style={{ color: "#fff" }} />
+            <Text style={{fontSize: 16, fontWeight: "bold", color: "#fff"}}>Add To Cart</Text>
+        </Button>
       </View>
     </SafeAreaView>
   );
 };
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    addItemToCart: (product) =>
-      dispatch(actions.addToCart({ quantify: 1, product })),
-    addItemToWishlist: (product) =>
-    dispatch(actionsWishlist.addToWishlist({ quantify: 1, product })),
-  };
-};
-
 
 const styles = StyleSheet.create({
   header: {
@@ -285,13 +333,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   bottomHeader: {
-    bottom: 0,
+    height: 70,
     flexDirection: "row",
-    color: "#f2f2f2",
     justifyContent: "space-between",
   },
   headerContainer: {
-    marginTop: 15,
+    marginTop: -5,
     marginLeft: 20,
     flexDirection: "row",
     justifyContent: "flex-start",
@@ -340,13 +387,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   btnCart: {
-    width: 180,
-    height: 50,
+    width: 220,
     backgroundColor: "#000",
-    alignItems: "center",
+    alignSelf: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 20,
+    marginEnd: 15
   },
 });
 
-export default connect(mapDispatchToProps, null)(ProductDetail);
+export default ProductDetail

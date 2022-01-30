@@ -22,9 +22,9 @@ import OrderCardComponent from "../../component/OrderCardComponent";
 var { height } = Dimensions.get("window");
 
 const Order = (props) => {
-  const { loading, data } = useQuery(FETCH_USER_ORDER_QUERY);
+  const { loading, data, error } = useQuery(FETCH_USER_ORDER_QUERY);
   const { getUserOrders: orders } = data ? data : [];
-  console.log(orders);
+  console.log(error);
 
   const [activeChip, setActiveChip] = useState("-1");
   const [active, setActive] = useState("Confirmation");

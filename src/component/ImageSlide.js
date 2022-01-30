@@ -1,6 +1,8 @@
 import React from "react";
-import { Image, View } from "react-native";
+import { Image, View, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
+
+var { width } = Dimensions.get("window")
 
 const ImageSlide = ({ images }) => {
   console.log("this image", images);
@@ -12,7 +14,7 @@ const ImageSlide = ({ images }) => {
           <Image
           key={index}
           source={{ uri: image.downloadUrl }}
-          style={{ width: "100%", height: 260 }}
+          style={{ width: width, height: 400 }}
         />
         ))}
       </Swiper>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Image, Text } from "react-native";
+import { View, Image, Text, Dimensions } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import { Card } from "react-native-paper";
+import { Card, Checkbox } from "react-native-paper";
 
 import { useMutation } from "@apollo/client";
 import { EDIT_CHECKED_MUTATION } from "../../util/graphql";
@@ -10,6 +10,8 @@ import CartItem from "./CartItem";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { checkoutItems } from "../../../Redux/actions/orderAction";
+
+var { width } = Dimensions.get("window")
 
 const CardGroup = (props) => {
   const [checked, setChecked] = useState(props.cartItem[0].isChecked);
@@ -33,18 +35,18 @@ const CardGroup = (props) => {
     },
   });
 
-  const onChecked = (sellerName) => {
+  const onChecked = (data) => {
     console.log("onChecked called");
     let carts = props.carts;
     if (carts.length > 0) {
       console.log(carts[0].cartItem);
       if (
         carts.find(
-          (cart) => cart.cartItems[0].item.user.seller.username === sellerName
+          (cart) => cart.cartItems[0].item.user.seller.username === data
         )
       ) {
         carts = carts.filter(
-          (cart) => cart.user.seller.username !== sellerName
+          (cart) => cart.user.seller.username !== data
         );
       } else {
         const cart = {
@@ -66,15 +68,13 @@ const CardGroup = (props) => {
   };
 
   return (
-    <View>
       <Card
         style={{
           marginTop: 20,
           borderRadius: 20,
           elevation: 4,
           backgroundColor: "#f2f2f2",
-          marginStart: 20,
-          marginEnd: 20,
+          width: "95%",
         }}
       >
         <Card.Content>
@@ -126,7 +126,6 @@ const CardGroup = (props) => {
             })}
         </Card.Content>
       </Card>
-    </View>
   );
 };
 

@@ -21,6 +21,7 @@ export default function Main({ navigation }) {
       <Tab.Navigator
         initialRouteName="Home"
         tabBarOptions={{
+          keyboardHidesTabBar: true,
           showLabel: false,
           tabStyle: {
             backgroundColor: "white",
@@ -52,10 +53,14 @@ export default function Main({ navigation }) {
             tabBarVisible: ((route) => {
               const routeName = getFocusedRouteNameFromRoute(route) ?? ""
               if (routeName === "Product Detail") {
-                  return false
+                return false
               } if (routeName === "Chat") {
                 return false
-              } 
+              } if(routeName === "Product Review"){
+                return false
+              } if(routeName === "Edit Product"){
+                return false
+              }
               return true
           })(route),
             tabBarIcon: ({ focused }) => (
@@ -81,7 +86,14 @@ export default function Main({ navigation }) {
         <Tab.Screen
           name="Cart"
           component={CartNavigator}
-          options={{
+          options={({ route }) => ({
+            tabBarVisible: ((route) => {
+              const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+               if (routeName === "Checkout") {
+                return false
+              } 
+              return true
+          })(route),
             tabBarIcon: ({ focused }) => (
               <View>
                 <View
@@ -103,7 +115,7 @@ export default function Main({ navigation }) {
                 {/* <CartIcon /> */}
               </View>
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="Wishlist"
@@ -142,7 +154,23 @@ export default function Main({ navigation }) {
                 return false
               } if(routeName === "Order"){
                 return false
-              }
+              } if(routeName === "Add Product"){
+                return false
+              } if(routeName === "Edit Product"){
+                return false
+              } if(routeName === "Order Seller"){
+                return false
+              } if(routeName === "Product List"){
+                return false
+              } if(routeName === "Edit Seller"){
+                return false
+              } if(routeName === "Order Seller Detail"){
+                return false
+              } if(routeName === "Order Detail"){
+                return false
+              } if(routeName === "Add Review"){
+                return false
+              } 
               return true
           })(route),
             tabBarIcon: ({ focused }) => (

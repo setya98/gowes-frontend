@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -7,319 +7,327 @@ import {
   Image,
   TouchableWithoutFeedback,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
-import { Container, Text, Button } from "native-base";
+import { Text } from "native-base";
 import { Avatar, Divider } from "react-native-paper";
 import Icon from "react-native-vector-icons/AntDesign";
-import Ionicons from "react-native-vector-icons/Ionicons"
-import FontAwesome from "react-native-vector-icons/FontAwesome"
-import Toast from "react-native-toast-message"
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Swiper from "react-native-swiper";
-import Animated from "react-native-reanimated";
 
 import TitleHeader from "../../component/TitleHeader";
-import BorderWishlist from "../../component/BorderWishlist";
 import BorderPrice from "../../component/BorderPrice";
 import ImageSlide from "../../component/ImageSlide";
 
-import { connect } from "react-redux";
 
-import { useMutation, useQuery } from "@apollo/client"
-import { AuthContext } from "../../context/auth"
-import {
-  ADD_TO_CART_MUTATION,
-  FETCH_CART_QUERY,
-  FETCH_USER_CART_QUERY
-} from "../../util/graphql"
+import { useQuery } from "@apollo/client";
+import { AuthContext } from "../../context/auth";
+import { FETCH_ITEM_QUERY } from "../../util/graphql";
+
 import ButtonWishlist from "../../component/ButtonWishlist";
-
+import ItemButtonOrder from "../../component/ItemButtonOrder";
+import EditButtonItem from "../../component/EditButtonItem";
 
 var { height } = Dimensions.get("window");
 
 const ProductDetail = (props) => {
-  const [item, setItem] = useState(props.route.params.item);
-  const itemId = props.route.params.item
-  const [amountItem, setAmountItem] = useState(1)
-  const[errors, setErrors] = useState({})
+  const itemUserId = props.route.params.userId;
+  const item = props.route.params.item;
+  const context = useContext(AuthContext);
+  const user = useContext(AuthContext);
 
-  console.log(props.route.params.item)
-  const user = useContext(AuthContext)
-
-  const [addToCart] = useMutation(ADD_TO_CART_MUTATION, {
+  const {
+    loading: loadingItem,
+    data: itemData,
+    data: chatData,
+  } = useQuery(FETCH_ITEM_QUERY, {
     variables: {
       itemId: item.id,
-      isChecked: false,
-      amountItem: amountItem
+      itemUserId: itemUserId,
+      currentUserId: context.user
+        ? context.user.id
+        : "000000000000000000000000",
     },
-    update(proxy, result) {
-      const data = proxy.readQuery({
-        query: FETCH_USER_CART_QUERY
-      })
+  });
+  const { getItem: itemDetail } = itemData ? itemData : [];
+  const { isChatExists } = chatData ? chatData : [];
 
-      proxy.writeQuery({
-        query: FETCH_USER_CART_QUERY,
-        data: {
-          getUserCartItems: [
-            result.data.addCartItem,
-            ...data.getUserCartItems
-          ]
-        }
-      })
-
-      console.log("hmmm")
-    },
-    onError(err) {
-      setErrors(err.graphQLErrors[0].extensions.exception.errors);
-      console.log(errors);
-    },
-  })
-
-  const { loading, data: userCartData } = useQuery(FETCH_CART_QUERY,{
-    variables: {
-      itemId: item.id
-    }
-  })
-  const { getUserCartItem: itemCart } = userCartData ? userCartData : []
-  let itemAmountCart = 0
-
-  if (!loading && itemCart) {
-    itemAmountCart = itemCart.amountItem
-  }
-  const AnimatedView = Animated.View
-
-  function addItemCart() {
-    addToCart();
-    Toast.show({
-      topOffset: 30,
-      type: "success",
-      text1: "Produk ditambahkan ke bag",
-    });
+  if(!loadingItem){
+    console.log("item", item.id)
+    console.log("itemUser", itemUserId)
+    console.log("context", context.user.id)
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <View style={styles.header}>
-      <FontAwesome
+      {loadingItem ? (
+        <></>
+      ) : (
+        <>
+          <View style={styles.header}>
+            <FontAwesome
               onPress={() => props.navigation.goBack()}
               name="chevron-left"
               size={18}
               style={{ marginTop: 14 }}
             />
-        <TouchableWithoutFeedback
-          onPress={() => props.navigation.navigate("Cart")}
-        >
-          <Image
-            source={require("../../assets/bag.png")}
-            resizeMode="contain"
-            style={{ width: 25, height: 30, marginTop: 7, marginBottom: 5 }}
-          />
-        </TouchableWithoutFeedback>
-      </View>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 190 }}
-      >
-        <Container>
-          <View style={styles.ImageContainer}>
-            <Swiper style={{ height: 260 }}>
-            <Image source={{ uri: item.images[0].downloadUrl }} style={{width: "100%", height: 260, resizeMode: "contain"}} />
-            </Swiper>
-          </View>
-          <View style={styles.detailContainer}>
-            <View style={styles.line} />
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            <TouchableWithoutFeedback
+              onPress={() => props.navigation.navigate("Cart")}
             >
-              <BorderPrice title={item.price} />
-              {/* <View style={{marginTop: 25, marginEnd: 20}}>
-              <TouchableWithoutFeedback
-                
-              >
-                <ButtonWishlist />
-              </TouchableWithoutFeedback>
-              </View> */}
-            </View>
-            <TitleHeader style={styles.text} title={item.name} />
-            <View style={styles.headerContainer}>
-              <Icon name="star" size={20} color={"#F18c06"} />
-              <Text style={styles.textRating}>{item.rating}</Text>
-              <Text
-                style={{
-                  marginTop: 5,
-                  fontWeight: "300",
-                  color: "#000",
-                  fontSize: 12,
-                }}
-              >
-                /5
-              </Text>
-              <Text
-                style={{
-                  marginLeft: 10,
-                  marginTop: 2,
-                  fontWeight: "300",
-                  color: "#000",
-                }}
-              >
-                Tersisa
-              </Text>
-              <Text
-                style={{
-                  marginLeft: 5,
-                  marginTop: 2,
-                  fontWeight: "300",
-                  color: "#000",
-                }}
-              >
-                {item.stock} 
-              </Text>
-            </View>
-            <Divider style={{height: 1, marginTop: 25}}></Divider>
-              <Avatar.Image
-                size={40}
-                source={{ uri: "https://react.semantic-ui.com/images/avatar/large/molly.png" }}
-                style={{
-                  marginStart: 15,
-                  marginTop: 28,
-                  marginEnd: 10,
-                  borderRadius: 60,
-                }}
+              <Image
+                source={require("../../assets/bag.png")}
+                resizeMode="contain"
+                style={{ width: 25, height: 30, marginTop: 7, marginBottom: 5 }}
               />
-            <View style={{ flexDirection: "column", height: 40 }}>
-              <Text
-                style={{
-                  marginStart: 70,
-                  marginTop: -42,
-                  fontWeight: "bold",
-                  color: "#000",
-                  fontSize: 18,
-                }}
-              >
-                {item.user.seller.username}
-              </Text>
-              <View style={{flexDirection: "row"}}>
-              <FontAwesome
-                name="map-marker"
-                size={15}
-                color={"#595959"}
-                style={{marginStart: 70, marginTop: 10}}
-              />
-              <Text
-                style={{
-                  marginStart: 8,
-                  fontSize: 16,
-                  fontWeight: "500",
-                  color: "#595959",
-                  marginTop: 8
-                }}
-              >
-                {item.user.address.cityName}
-              </Text>
+            </TouchableWithoutFeedback>
+          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 190 }}
+          >
+            <View style={{ height: "100%", flexGrow: 1 }}>
+              <View style={styles.ImageContainer}>
+                <Swiper style={{ height: 260 }} showsButtons={true}>
+                  <Image
+                    source={{ uri: itemDetail.images[0].downloadUrl }}
+                    style={{
+                      width: "100%",
+                      height: 260,
+                      resizeMode: "contain",
+                    }}
+                  />
+                </Swiper>
+              </View>
+              <View style={styles.detailContainer}>
+                <View style={styles.line} />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginStart: -5
+                  }}
+                >
+                  <BorderPrice title={itemDetail.price} />
+                  <View style={{ marginTop: 25, marginEnd: 20 }}>
+                    <TouchableWithoutFeedback>
+                      <ButtonWishlist user={user} item={itemDetail} />
+                    </TouchableWithoutFeedback>
+                  </View>
+                </View>
+                <TitleHeader style={styles.text} title={itemDetail.name} />
+                <View style={styles.headerContainer}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      props.navigation.navigate("Product Review", {
+                        item: itemDetail,
+                      })
+                    }
+                  >
+                    <Icon name="star" size={20} color={"#F18c06"} />
+                    <Text style={styles.textRating}>{itemDetail.score}</Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      marginTop: 5,
+                      fontWeight: "300",
+                      color: "#000",
+                      fontSize: 12,
+                    }}
+                  >
+                    /5
+                  </Text>
+                  <Text
+                    style={{
+                      marginLeft: 10,
+                      marginTop: 2,
+                      fontWeight: "300",
+                      color: "#000",
+                    }}
+                  >
+                    Tersisa
+                  </Text>
+                  <Text
+                    style={{
+                      marginLeft: 5,
+                      marginTop: 2,
+                      fontWeight: "300",
+                      color: "#000",
+                    }}
+                  >
+                    {itemDetail.stock}
+                  </Text>
+                </View>
+                <Divider style={{ height: 1, marginTop: 5 }}></Divider>
+                <Avatar.Image
+                  size={40}
+                  source={{
+                    uri: "https://react.semantic-ui.com/images/avatar/large/molly.png",
+                  }}
+                  style={{
+                    marginStart: 15,
+                    marginTop: 28,
+                    marginEnd: 10,
+                    borderRadius: 60,
+                  }}
+                />
+                <View style={{ flexDirection: "column", height: 40 }}>
+                  <Text
+                    style={{
+                      marginStart: 70,
+                      marginTop: -42,
+                      fontWeight: "bold",
+                      color: "#000",
+                      fontSize: 18,
+                    }}
+                  >
+                    {itemDetail.user.seller.username}
+                  </Text>
+                  <View style={{ flexDirection: "row" }}>
+                    <FontAwesome
+                      name="map-marker"
+                      size={15}
+                      color={"#595959"}
+                      style={{ marginStart: 70, marginTop: 10 }}
+                    />
+                    <Text
+                      style={{
+                        marginStart: 8,
+                        fontSize: 16,
+                        fontWeight: "500",
+                        color: "#595959",
+                        marginTop: 8,
+                      }}
+                    >
+                      {itemDetail.user.address.cityName}
+                    </Text>
+                  </View>
+                </View>
+                <Divider style={{ height: 1 }}></Divider>
+                <Text
+                  style={{
+                    marginTop: 30,
+                    marginLeft: 15,
+                    fontWeight: "bold",
+                    fontSize: 22,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  Informasi Produk
+                </Text>
+                <View style={{ flexDirection: "row" }}>
+                  <Image
+                    source={require("../../assets/box.png")}
+                    resizeMode="contain"
+                    style={{
+                      width: 20,
+                      height: 20,
+                      marginStart: 20,
+                      marginTop: 30,
+                      tintColor: "#595959",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      marginTop: 30,
+                      marginStart: 15,
+                      fontWeight: "bold",
+                      color: "#595959",
+                    }}
+                  >
+                    {itemDetail.condition}
+                  </Text>
+                  <Image
+                    source={require("../../assets/settings.png")}
+                    resizeMode="contain"
+                    style={{
+                      width: 23,
+                      height: 23,
+                      marginStart: 40,
+                      marginTop: 30,
+                      tintColor: "#595959",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      marginTop: 31,
+                      marginStart: 10,
+                      fontWeight: "bold",
+                      color: "#595959",
+                    }}
+                  >
+                    {itemDetail.category}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row" }}>
+                  <Image
+                    source={require("../../assets/weight.png")}
+                    resizeMode="contain"
+                    style={{
+                      width: 20,
+                      height: 20,
+                      marginStart: 20,
+                      marginTop: 20,
+                      marginBottom: 10,
+                      tintColor: "#595959",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      marginTop: 22,
+                      marginStart: 15,
+                      fontWeight: "bold",
+                      color: "#595959",
+                    }}
+                  >
+                    {itemDetail.weight} gr
+                  </Text>
+                </View>
+                <Divider style={{ height: 1, marginTop: 25 }}></Divider>
+                <Text
+                  style={{
+                    marginTop: 30,
+                    marginLeft: 15,
+                    fontWeight: "bold",
+                    fontSize: 22,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  Deskripsi
+                </Text>
+                <Text
+                  style={{
+                    marginLeft: 15,
+                    marginTop: 25,
+                    fontWeight: "700",
+                    color: "#595959",
+                  }}
+                >
+                  {itemDetail.description}
+                </Text>
               </View>
             </View>
-            <Divider style={{height: 1}}></Divider>
-            <View style={{ flexDirection: "row" }}>
-              <Image
-                source={require("../../assets/box.png")}
-                resizeMode="contain"
-                style={{
-                  width: 20,
-                  height: 20,
-                  marginStart: 20,
-                  marginTop: 30,
-                  tintColor: "#595959"
-                }}
-              />
-              <Text
-                style={{
-                  marginTop: 30,
-                  marginStart: 15,
-                  fontWeight: "bold",
-                  color: "#595959",
-                }}
-              >
-                {item.condition}
-              </Text>
-              <Image
-                source={require("../../assets/settings.png")}
-                resizeMode="contain"
-                style={{
-                  width: 23,
-                  height: 23,
-                  marginStart: 40,
-                  marginTop: 30,
-                  tintColor: "#595959"
-                }}
-              />
-              <Text
-                style={{
-                  marginTop: 31,
-                  marginStart: 10,
-                  fontWeight: "bold",
-                  color: "#595959",
-                }}
-              >
-                {item.category}
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <Image
-                source={require("../../assets/weight.png")}
-                resizeMode="contain"
-                style={{
-                  width: 20,
-                  height: 20,
-                  marginStart: 20,
-                  marginTop: 20,
-                  marginBottom: 10,
-                  tintColor: "#595959"
-                }}
-              />
-              <Text
-                style={{
-                  marginTop: 22,
-                  marginStart: 15,
-                  fontWeight: "bold",
-                  color: "#595959",
-                }}
-              >
-                {item.weight, "-"}  gr
-              </Text>
-            </View>
-            <Divider style={{height: 1, marginTop: 25}}></Divider>
-            <Text
-              style={{
-                marginTop: 30,
-                marginLeft: 15,
-                fontWeight: "bold",
-                fontSize: 22,
-                letterSpacing: 0.3,
-              }}
-            >
-              Deskripsi
-            </Text>
-            <Text
-              style={{
-                marginLeft: 15,
-                marginTop: 25,
-                fontWeight: "700",
-                color: "#595959",
-              }}
-            >
-              {item.description}
-            </Text>
+          </ScrollView>
+          <View style={styles.bottomHeader}>
+            {context.user ? (
+              context.user.id !== item.user.id ? (
+                <ItemButtonOrder
+                  item={itemDetail}
+                  isChatExists={isChatExists}
+                  navigation={props.navigation}
+                />
+              ) : (
+                <EditButtonItem 
+                item={itemDetail}
+                itemEdit={item}
+                navigation={props.navigation}
+                />
+              )
+            ) : (
+              <></>
+            )}
           </View>
-        </Container>
-      </ScrollView>
-      <View style={styles.bottomHeader}>
-        <Button style={{backgroundColor: "#fff", borderRadius: 20, borderColor: "#000", width: 90, justifyContent: "center", alignSelf: "center", marginStart: 15}}>
-          <Ionicons name="chatbox-ellipses" size={25} />
-        </Button>
-        <Button style={styles.btnCart} onPress={addItemCart}>
-          <Icon name="plus" size={16} style={{ color: "#fff" }} />
-            <Text style={{fontSize: 16, fontWeight: "bold", color: "#fff"}}>Add To Cart</Text>
-        </Button>
-      </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
@@ -335,6 +343,7 @@ const styles = StyleSheet.create({
   bottomHeader: {
     height: 70,
     flexDirection: "row",
+    backgroundColor: "#f2f2f2",
     justifyContent: "space-between",
   },
   headerContainer: {
@@ -360,7 +369,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowColor: "#000",
     shadowOpacity: 0.5,
-    height: height,
+    height: "100%",
     borderTopRightRadius: 40,
     borderTopLeftRadius: 40,
   },
@@ -392,8 +401,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     justifyContent: "center",
     borderRadius: 20,
-    marginEnd: 15
+    marginEnd: 15,
   },
 });
 
-export default ProductDetail
+export default ProductDetail;

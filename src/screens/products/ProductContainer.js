@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
 import {
   Container,
@@ -17,6 +17,7 @@ import TitleHeader from "../../component/TitleHeader";
 import { Card, Chip } from "react-native-paper";
 import { useQuery } from "@apollo/react-hooks";
 import { FETCH_ITEMS_QUERY } from "../../util/graphql";
+import { AuthContext } from "../../context/auth"
 
 var { height } = Dimensions.get("window")
 
@@ -26,15 +27,17 @@ const ProductContainer = (props) => {
   const [focus, setFocus] = useState();
   const [active, setActive] = useState();
   const [activeChip, setActiveChip] = useState();
+  const context = useContext(AuthContext)
   const { loading, data, refetch } = useQuery(FETCH_ITEMS_QUERY);
   const { getItems: items } = data ? data : [];
-
+  
   useEffect(() => {
     setProducts(items);
     setProductsFiltered(items);
     setFocus(false);
     setActive(-1);
     setActiveChip("All");
+    refetchProduct()
 
     return () => {
       setProducts([]);
@@ -42,9 +45,10 @@ const ProductContainer = (props) => {
       setFocus();
       setActive();
       setActiveChip();
+      refetchProduct()
     };
   }, []);
-  
+
   // Product Methods
   const searchProduct = (text) => {
     setProductsFiltered(
@@ -62,7 +66,6 @@ const ProductContainer = (props) => {
 
   const handleChip = (name) => {
     setActiveChip(name);
-    console.log(name);
   };
 
   const refetchProduct = () => {
@@ -195,7 +198,7 @@ const ProductContainer = (props) => {
                     handleChip("Sparepart"), refetchProduct();
                   }}
                 >
-                  Parts
+                  Sparepart
                 </Chip>
                 <Chip
                   textStyle={[
@@ -234,6 +237,7 @@ const ProductContainer = (props) => {
                       navigation={props.navigation}
                       key={index}
                       item={item}
+                      userId={context.user.id}
                     />
                   ))}
               </View>

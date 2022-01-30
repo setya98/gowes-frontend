@@ -35,6 +35,8 @@ const OrderSeller = (props) => {
     },
   });
 
+  console.log(context.user.id)
+
   const { getUser: currentUser } = userData ? userData : [];
 
   let username = "";
@@ -152,7 +154,7 @@ const OrderSeller = (props) => {
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 110,
+            marginStart: 90,
           }}
         >
           Daftar Penjualan
@@ -445,12 +447,13 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#595959",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   center: {
     justifyContent: "center",
     alignItems: "center",
+    borderColor: "#8c8c8c"
   },
   active: {
     backgroundColor: "#fff",

@@ -51,6 +51,7 @@ const ItemSummaryCart = (props) => {
       </View>
       <Button
         onPress={checkout}
+        disabled={amount === 0}
         style={{
           backgroundColor: "#000",
           width: 110,
@@ -63,7 +64,7 @@ const ItemSummaryCart = (props) => {
         }}
       >
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-          Bayar
+          Bayar ({amount})
         </Text>
       </Button>
     </Card.Content>

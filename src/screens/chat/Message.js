@@ -133,7 +133,7 @@ const Message = (props) => {
       messages={getMessageGiftedChat()}
       onSend={(messages) => onSend(messages)}
       user={{
-        _id: 1,
+        _id: 2,
       }}
       alwaysShowSend
       scrollToBottom

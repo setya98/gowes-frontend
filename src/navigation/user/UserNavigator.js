@@ -8,13 +8,12 @@ import EditSeller from "../../screens/user/seller/EditSeller";
 import AddProduct from "../../screens/user/seller/AddProduct";
 import ProductContainerSeller from "../../screens/user/seller/ProductContainerSeller"
 import EditProduct from "../../screens/user/seller/EditProduct";
-import ProductReview from "../../screens/review/ProductReview";
-import ProductReviewCard from "../../screens/review/ProductReviewCard";
 import Order from "../../screens/order/Order";
 import OrderSeller from "../../screens/order/OrderSeller";
 import OrderDetail from "../../screens/order/OrderDetail";
 import OrderDetailSeller from "../../screens/order/OrderDetailSeller";
 import ImagePicker from "../../screens/user/seller/ImagePicker"
+import AddReview from "../../screens/user/buyer/AddReview";
 
 const Stack = createStackNavigator()
 
@@ -57,16 +56,6 @@ export default function UserNavigator({ navigation }) {
                 options={{ headerShown: false }}
             />
             <Stack.Screen
-                name='Review Product'
-                component={ProductReview}
-                options={{ headerShown: false }}
-            />
-             <Stack.Screen
-                name='Review Product Card'
-                component={ProductReviewCard}
-                options={{ headerShown: false }}
-            />
-            <Stack.Screen
                 name='Order'
                 component={Order}
                 options={{ headerShown: false }}
@@ -90,6 +79,11 @@ export default function UserNavigator({ navigation }) {
                 name="Image Picker"
                 component={ImagePicker}
                 options={{ headerRightContainerStyle: { paddingRight: 10 } }}
+            />
+            <Stack.Screen
+                name='Add Review'
+                component={AddReview}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     )

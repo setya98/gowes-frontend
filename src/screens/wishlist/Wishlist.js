@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Image,
+  RefreshControl,
+  Dimensions
 } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -18,9 +20,10 @@ import { FETCH_BOOKMARKS_QUERY } from "../../util/graphql";
 
 import ProductList from "../products/ProductList";
 
+var { height } = Dimensions.get("window")
+
 const Wishlist = (props) => {
   const context = useContext(AuthContext);
-  console.log(context);
 
   const { loading, data, refetch } = useQuery(FETCH_BOOKMARKS_QUERY, {
     variables: {
@@ -28,9 +31,7 @@ const Wishlist = (props) => {
     },
   });
 
-  const { getBookmarks: wishlist } = data ? data : [];
-
-  console.log(wishlist);
+  const { getBookmarks: bookmarks } = data ? data : [];
 
   return (
     <>
@@ -53,28 +54,29 @@ const Wishlist = (props) => {
             Wishlist
           </Text>
         </View>
+        <>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 130,
-          }}
+          contentContainerStyle={{paddingBottom: 190}}
         >
           {!loading ? (
-            wishlist.length > 0 ? (
+            bookmarks.length > 0 ? (
               <View style={styles.listContainer}>
-                {wishlist &&
-                  wishlist.map((item, index) => (
+                {bookmarks &&
+                  bookmarks.map((item, index) => (
                     <TouchableWithoutFeedback>
                       <ProductList
                         key={index}
                         item={item}
+                        userId={context.user.id}
                         navigation={props.navigation}
+                        refetch={refetch}
                       />
                     </TouchableWithoutFeedback>
                   ))}
               </View>
             ) : (
-              <Card.Content style={{height: "100%"}}>
+              <Card.Content>
                 <Image
                   source={require("../../assets/illus-wishlist.webp")}
                   resizeMode="contain"
@@ -90,6 +92,7 @@ const Wishlist = (props) => {
                     alignSelf: "center",
                     fontSize: 18,
                     fontWeight: "bold",
+                    marginBottom: "100%"
                   }}
                 >
                   Kamu belum punya wishlist
@@ -97,6 +100,7 @@ const Wishlist = (props) => {
               </Card.Content>
             )
           ) : (
+            <View style={{height: height}}>
               <ActivityIndicator
                 style={{
                   justifyContent: "center",
@@ -106,8 +110,10 @@ const Wishlist = (props) => {
                 size="large"
                 color="#000"
               />
+            </View>
           )}
         </ScrollView>
+        </>
       </SafeAreaView>
     </>
   );
@@ -116,7 +122,6 @@ const Wishlist = (props) => {
 const styles = StyleSheet.create({
   listContainer: {
     height: "100%",
-    flex: 1,
     flexDirection: "row",
     alignItems: "flex-start",
     flexWrap: "wrap",

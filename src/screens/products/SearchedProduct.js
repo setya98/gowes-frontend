@@ -1,45 +1,45 @@
 import React from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
-import { Content, Left, Body, ListItem, Text } from "native-base";
-import { Avatar } from "react-native-paper";
+import { Content } from "native-base";
+import { Avatar, Card, List, Divider } from "react-native-paper";
 
 var { width } = Dimensions.get("window");
 
 const SearchedProduct = (props) => {
   const { productsFiltered } = props;
+  console.log(productsFiltered.length)
+  
   return (
     <Content style={{ width: width }}>
-    <View>
       {productsFiltered.length > 0 ? (
         productsFiltered.map((item) => (
-          <ListItem noBorder
+          <Card>
+          <Divider style={{marginTop: 5, marginBottom: 5, marginStart: 15, marginEnd: 15}}/>
+          <List.Item noBorder
             onPress={() => {
               props.navigation.navigate("Product Detail", { item: item });
             }}
             key={item.id}
-            avatar
-          >
-            <Left>
+            left={() => (
               <Avatar.Image
                 size={55}
+                style={{marginStart: 5}}
                 source={{
                   uri: item.images[0].downloadUrl
                     ? item.images[0].downloadUrl
                     : "https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png",
                 }}
               />
-            </Left>
-            <Body>
-              <Text>{item.name}</Text>
-            </Body>
-          </ListItem>
+            )}
+              title={item.name}
+              />
+          </Card>
         ))
       ) : (
         <View style={styles.center}>
           <Text style={{ alignSelf: "center" }}>No products match</Text>
         </View>
       )}
-    </View>
     </Content>
   );
 };

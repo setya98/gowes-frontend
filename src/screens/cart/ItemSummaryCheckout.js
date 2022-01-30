@@ -177,8 +177,7 @@ const ItemSummaryCheckout = (props) => {
   if (loading) return <Text>Loading ...</Text>;
 
   return (
-    <View>
-      <Card.Content style={{backgroundColor: "#fff", borderRadius: 20, marginStart: 15, marginEnd: 15}}>
+      <Card.Content style={{backgroundColor: "#fff", borderRadius: 20, marginStart: 15, marginEnd: 15, width: "90%", elevation: 1}}>
         <Text style={styles.textHeader}>Total Belanja</Text>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Text
@@ -220,11 +219,11 @@ const ItemSummaryCheckout = (props) => {
           </Text>
         </View>
       </Card.Content>
-    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  
   textHeader: {
     fontSize: 18,
     fontWeight: "bold",

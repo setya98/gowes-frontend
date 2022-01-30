@@ -5,7 +5,6 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  TouchableWithoutFeedback,
   Dimensions,
   TextInput,
   TouchableOpacity,
@@ -20,12 +19,12 @@ import Animated from "react-native-reanimated";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { AuthContext } from "../../../context/auth";
 import {
   UPDATE_ITEM_MUTATION,
   DELETE_ITEM_MUTATION,
-  FETCH_SINGLE_ITEM_QUERY,
+  FETCH_ITEM_SELLER_QUERY,
 } from "../../../util/graphql";
 
 var { height, width } = Dimensions.get("window");
@@ -33,40 +32,38 @@ var { height, width } = Dimensions.get("window");
 const EditProduct = (props) => {
   const itemId = props.route.params.item.id;
   const product = props.route.params.product;
-  const itemData = props.route.params.item;
   const { colors } = useTheme();
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
   const [image, setImage] = useState(null);
+
   
-  // console.log("product", product.getItem)
+  console.log("category", typeof(product.getItem.category))
 
-  // console.log(data)
-
-  // const saveAlert = () =>
-  // Alert.alert("Hapus Produk", "Kamu yakin ingin hapus produk?", [
-  //   {
-  //     text: "Batal",
-  //     onPress: () => console.log("Cancel Pressed"),
-  //   },
-  //   {
-  //     text: "Simpan",
-  //     onPress: () => console.log("OK Pressed")
-  //   },
-  // ]);
+  const deleteAlert = () =>
+  Alert.alert("Hapus Produk", "Kamu yakin ingin hapus produk?", [
+    {
+      text: "Batal",
+      onPress: () => null,
+    },
+    {
+      text: "Hapus",
+      onPress: () => itemDelete()
+    },
+  ]);
 
   const [values, setValues] = useState({
     name: product.getItem.name,
-    price: product.getItem.price,
-    stock: product.getItem.stock,
+    price: product.getItem.price.toString(),
+    stock: product.getItem.stock.toString(),
     category: product.getItem.category,
     condition: product.getItem.condition,
-    weight: product.getItem.weight,
+    weight: product.getItem.weight.toString(),
     description: product.getItem.description,
-    length: product.getItem.dimension.length,
-    width: product.getItem.dimension.width,
-    height: product.getItem.dimension.height,
+    length: product.getItem.dimension.length.toString(),
+    width: product.getItem.dimension.width.toString(),
+    height: product.getItem.dimension.height.toString(),
     itemId: itemId,
     images: [
       {
@@ -86,22 +83,18 @@ const EditProduct = (props) => {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    // console.log(props.route.params.item.id);
-    // console.log(itemData)
-    console.log(product.getItem.price);
-    // console.log(typeof(values.condition));
     editItem();
+    // console.log(values)
   };
 
   const [updateItem] = useMutation(UPDATE_ITEM_MUTATION, {
     update(_, { data: { updateItem: updatedItem } }) {
       setErrors({});
       Toast.show({
-        topOffset: 60,
+        topOffset: 30,
         type: "success",
         text1: "Produk Berhasil Tersimpan",
       });
-      props.route.params.refetchItems();
       props.navigation.navigate("Seller");
     },
     onError(err) {
@@ -122,18 +115,34 @@ const EditProduct = (props) => {
     updateItem();
   }
 
-  // const [deleteItem] = useMutation(DELETE_ITEM_MUTATION, {
-  //   update() {
-  //     Toast.show({
-  //       topOffset: 60,
-  //       type: "success",
-  //       text1: "Produk Berhasil Dihapus",
-  //     });
-  //     props.route.params.refetchItems();
-  //     props.navigation.navigate("Seller");
-  //   },
-  //   variables: { itemId: itemId },
-  // });
+  function itemDelete(){
+    deleteItem()
+  }
+
+  const [deleteItem] = useMutation(DELETE_ITEM_MUTATION, {
+    update(proxy) {
+      const data = proxy.readQuery({
+        query: FETCH_ITEM_SELLER_QUERY,
+        variables: { userId: context.user.id },
+      });
+
+      proxy.writeQuery({
+        query: FETCH_ITEM_SELLER_QUERY,
+        data: {
+          getSellerItems: data.getSellerItems.filter((p) => p.id !== itemId),
+        },
+      });
+
+      console.log("product deleted")
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Produk Berhasil Dihapus",
+      });
+      props.navigation.navigate("Seller");
+    },
+    variables: { itemId: itemId },
+  });
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -144,7 +153,7 @@ const EditProduct = (props) => {
       quality: 1,
     });
 
-    console.log(result);
+    // console.log(result);
 
     if (!result.cancelled) {
       setImage(result.uri);
@@ -296,12 +305,14 @@ const EditProduct = (props) => {
             >
               <Picker
                 name="category"
+                selectedValue={values.category}
                 value={values.category}
                 onValueChange={(val) => onChange("category", val)}
               >
-                <Picker.Item label="Parts" value="Parts" />
-                <Picker.Item label="Accessories" value="Accessories" />
-                <Picker.Item label="Apparel" value="Apparel" />
+                <Picker.Item label="-" value="-" />
+                <Picker.Item label="sparepart" value="sparepart" />
+                <Picker.Item label="accessories" value="accessories" />
+                <Picker.Item label="apparel" value="apparel" />
               </Picker>
             </View>
             <View
@@ -316,9 +327,11 @@ const EditProduct = (props) => {
             >
               <Picker
                 name="condition"
+                selectedValue={values.condition}
                 value={values.condition}
                 onValueChange={(val) => onChange("condition", val)}
               >
+                <Picker.Item label="-" value="-" />
                 <Picker.Item label="New" value="New" />
                 <Picker.Item label="Used" value="Used" />
               </Picker>
@@ -418,7 +431,7 @@ const EditProduct = (props) => {
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <TouchableOpacity style={styles.commandButton} onPress={onSubmit}>
+            <TouchableOpacity style={styles.commandButton} onPress={deleteAlert}>
               <Text style={{ fontSize: 20, fontWeight: "bold", color: "#000" }}>
                 Hapus
               </Text>

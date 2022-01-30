@@ -27,9 +27,11 @@ export const FETCH_ITEMS_QUERY = gql`
     getItems {
       id
       name
+      stock
       price
       condition
       createdAt
+      weight
       category
       description
       images {
@@ -44,9 +46,11 @@ export const FETCH_ITEMS_QUERY = gql`
       user {
         id
         address {
+          cityId
           cityName
         }
         seller {
+          id
           username
         }
       }
@@ -55,7 +59,7 @@ export const FETCH_ITEMS_QUERY = gql`
 `;
 
 export const SEARCH_ITEMS_QUERY = gql`
-  query(
+  query (
     $keyword: String!
     $category: String!
     $condition: String!
@@ -83,15 +87,18 @@ export const SEARCH_ITEMS_QUERY = gql`
         downloadUrl
       }
       bookmarkedBy {
+        id
         userId
         createdAt
       }
       user {
         id
         address {
+          cityId
           cityName
         }
         seller {
+          id
           username
         }
       }
@@ -100,7 +107,7 @@ export const SEARCH_ITEMS_QUERY = gql`
 `;
 
 export const FETCH_SINGLE_ITEM_QUERY = gql`
-  query($itemId: ID!) {
+  query ($itemId: ID!) {
     getItem(itemId: $itemId) {
       id
       name
@@ -137,7 +144,7 @@ export const FETCH_SINGLE_ITEM_QUERY = gql`
 `;
 
 export const FETCH_ITEM_QUERY = gql`
-  query($itemId: ID!, $itemUserId: ID!, $currentUserId: ID!) {
+  query ($itemId: ID!, $itemUserId: ID!, $currentUserId: ID!) {
     getItem(itemId: $itemId) {
       id
       name
@@ -154,7 +161,6 @@ export const FETCH_ITEM_QUERY = gql`
         height
       }
       images {
-        id
         downloadUrl
       }
       bookmarkedBy {
@@ -164,6 +170,10 @@ export const FETCH_ITEM_QUERY = gql`
       }
       user {
         id
+        address {
+          cityId
+          cityName
+        }
         seller {
           id
           username
@@ -179,6 +189,7 @@ export const FETCH_ITEM_QUERY = gql`
         id
         email
         buyer {
+          id
           name
           avatar
         }
@@ -200,17 +211,46 @@ export const FETCH_ITEM_QUERY = gql`
   }
 `;
 
+export const FETCH_ITEM_REVIEWS = gql`
+  query ($itemId: ID!) {
+    getItemReviews(itemId: $itemId) {
+      id
+      score
+      body
+      user {
+        id
+        email
+        buyer {
+          id
+          name
+          avatar
+        }
+      }
+      item {
+        id
+        name
+      }
+      images {
+        downloadUrl
+      }
+      createdAt
+    }
+  }
+`;
+
 export const FETCH_CART_QUERY = gql`
-  query($itemId: ID!) {
+  query ($itemId: ID!) {
     getUserCartItem(itemId: $itemId) {
       id
       createdAt
       amountItem
       item {
         user {
+          id
           email
           phone
           seller {
+            id
             username
           }
         }
@@ -244,6 +284,7 @@ export const FETCH_BOOKMARKS_QUERY = gql`
           cityName
         }
         seller {
+          id
           username
         }
       }
@@ -264,11 +305,13 @@ export const FETCH_USER_CART_QUERY = gql`
         condition
         weight
         images {
+          id
           downloadUrl
         }
         user {
           id
           seller {
+            id
             username
           }
         }
@@ -278,14 +321,17 @@ export const FETCH_USER_CART_QUERY = gql`
         email
         phone
         address {
+          cityId
           cityName
           postalCode
           detail
         }
         buyer {
+          id
           name
         }
         seller {
+          id
           username
         }
       }
@@ -298,7 +344,7 @@ export const FETCH_USER_CART_QUERY = gql`
 `;
 
 export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
-  query($userId: ID!) {
+  query ($userId: ID!) {
     getUserCartItemsCheckout {
       id
       item {
@@ -310,11 +356,13 @@ export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
         condition
         stock
         images {
+          id
           downloadUrl
         }
         user {
           id
           seller {
+            id
             username
           }
           address {
@@ -331,14 +379,17 @@ export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
         email
         phone
         address {
+          cityId
           cityName
           postalCode
           detail
         }
         buyer {
+          id
           name
         }
         seller {
+          id
           username
         }
       }
@@ -360,6 +411,7 @@ export const FETCH_USER_CART_CHECKOUT_QUERY = gql`
       }
       balance
       buyer {
+        id
         name
       }
     }
@@ -407,6 +459,7 @@ export const ADD_ITEM_MUTATION = gql`
         height
       }
       images {
+        id
         downloadUrl
       }
       createdAt
@@ -469,6 +522,7 @@ export const FETCH_CHATS_QUERY = gql`
       users {
         id
         seller {
+          id
           username
         }
       }
@@ -478,12 +532,12 @@ export const FETCH_CHATS_QUERY = gql`
 `;
 
 export const FETCH_CHAT_MESSAGES_QUERY = gql`
-  query($chatId: ID!) {
+  query ($chatId: ID!) {
     getMessages(chatId: $chatId) {
       id
       content
       sentAt
-      user 
+      user
       item {
         id
         name
@@ -495,7 +549,7 @@ export const FETCH_CHAT_MESSAGES_QUERY = gql`
 `;
 
 export const MESSAGES_SUBSCRIPTION = gql`
-  subscription($chatId: ID!) {
+  subscription ($chatId: ID!) {
     newMessage(chatId: $chatId) {
       id
       content
@@ -546,7 +600,7 @@ export const FETCH_CITIES_QUERY = gql`
 `;
 
 export const FETCH_COST_COURIER_QUERY = gql`
-  query(
+  query (
     $origin: String!
     $destination: String!
     $weight: Int!
@@ -692,6 +746,7 @@ export const FETCH_USER_ORDER_QUERY = gql`
       }
       user {
         buyer {
+          id
           name
         }
       }
@@ -719,7 +774,7 @@ export const FETCH_USER_ORDER_QUERY = gql`
 `;
 
 export const FETCH_SELLER_ORDER_QUERY = gql`
-  query($username: String!) {
+  query ($username: String!) {
     getSellerOrders(username: $username) {
       id
       items {
@@ -738,6 +793,7 @@ export const FETCH_SELLER_ORDER_QUERY = gql`
       }
       user {
         buyer {
+          id
           name
           avatar
         }
@@ -761,7 +817,7 @@ export const FETCH_SELLER_ORDER_QUERY = gql`
   }
 `;
 export const FETCH_USER_QUERY = gql`
-  query($userId: ID!) {
+  query ($userId: ID!) {
     getUser(userId: $userId) {
       id
       email
@@ -775,11 +831,13 @@ export const FETCH_USER_QUERY = gql`
       }
       balance
       buyer {
+        id
         name
         birthDate
         avatar
       }
       seller {
+        id
         username
         createdAt
         description
@@ -839,6 +897,7 @@ export const UPDATE_PROFILE_MUTATION = gql`
       balance
       token
       buyer {
+        id
         name
         birthDate
         avatar
@@ -848,7 +907,7 @@ export const UPDATE_PROFILE_MUTATION = gql`
 `;
 
 export const FETCH_ITEM_SELLER_QUERY = gql`
-  query($userId: ID!) {
+  query ($userId: ID!) {
     getSellerItems(userId: $userId) {
       id
       name
@@ -870,6 +929,7 @@ export const FETCH_ITEM_SELLER_QUERY = gql`
       user {
         id
         seller {
+          id
           username
         }
       }
@@ -891,30 +951,28 @@ export const BOOKMARK_ITEM_MUTATION = gql`
 `;
 
 export const CREATE_POST_MUTATION = gql`
-mutation createPost(
-  $body: String!
-) {
-  createPost(
-      body: $body
-  ) {
-    id
-    body
-    createdAt
-    username
-    likes{
-        id username createdAt
-    }
-    likeCount 
-    commentCount
-    comments{
-        id 
-        username 
-        createdAt 
+  mutation createPost($body: String!) {
+    createPost(body: $body) {
+      id
+      body
+      createdAt
+      username
+      likes {
+        id
+        username
+        createdAt
+      }
+      likeCount
+      commentCount
+      comments {
+        id
+        username
+        createdAt
         body
+      }
     }
   }
-}
-`
+`;
 
 export const LIKE_POST_MUTATION = gql`
   mutation likePost($postId: ID!) {
@@ -972,22 +1030,17 @@ export const ADD_REVIEW_MUTATION = gql`
     $score: Int!
     $body: String!
     $itemId: ID!
-    $images: [ImageInput]!
   ) {
     addReview(
       addReviewInput: {
         score: $score
         body: $body
         itemId: $itemId
-        images: $images
       }
     ) {
       id
       score
       body
-      images {
-        downloadUrl
-      }
       createdAt
     }
   }
@@ -1036,6 +1089,7 @@ export const UPDATE_ITEM_MUTATION = gql`
         height
       }
       images {
+        id
         downloadUrl
       }
       createdAt
@@ -1068,23 +1122,22 @@ export const CREATE_PAYMENT_QUERY = gql`
 `;
 
 export const LOGIN_USER = gql`
-  mutation login(
-    $email: String!
-    $password: String!
-  ) {
-    login(
-        email: $email
-        password: $password
-    ) {
+  mutation login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
       id
       email
       buyer {
-          name
+        id
+        name
+      }
+      seller {
+        id
+        username
       }
       token
     }
   }
-`
+`;
 export const REGISTER_USER = gql`
   mutation register(
     $name: String!
@@ -1100,9 +1153,9 @@ export const REGISTER_USER = gql`
         confirmPassword: $confirmPassword
       }
     ) {
-        id
-        email
-        token
+      id
+      email
+      token
     }
   }
-`
+`;

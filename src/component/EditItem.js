@@ -1,52 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
+  ScrollView,
   SafeAreaView,
   Image,
-  KeyboardAvoidingView,
+  Dimensions,
   TextInput,
   TouchableOpacity,
-  Alert,
-  Dimensions,
-  Text,
   ImageBackground,
   Picker,
 } from "react-native";
-import { Button } from "native-base";
 import { useTheme } from "react-native-paper";
+import { Text } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
-import PropTypes from "prop-types";
-import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
+import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
-import BottomSheet from "reanimated-bottom-sheet";
 
-import { useMutation } from "@apollo/react-hooks";
-import { connect } from "react-redux";
-import { CommonActions } from "@react-navigation/native";
-import { useForm } from "../../../util/hooks";
-import { ADD_ITEM_MUTATION, FETCH_ITEMS_QUERY } from "../../../util/graphql";
+import { useMutation, useQuery } from "@apollo/client";
+import {
+  UPDATE_ITEM_MUTATION,
+  FETCH_SINGLE_ITEM_QUERY
+} from "../util/graphql";
 
-var { height } = Dimensions.get("window");
+var { height, width } = Dimensions.get("window");
 
-const AddProduct = (props) => {
+const EditItem = (props) => {
+  const itemData = props.route.params.itemData
+  console.log("form", itemData)
   const { colors } = useTheme();
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
-  const [image, setImage] = useState([]);
-
+  const [image, setImage] = useState(null);
+  
   const [values, setValues] = useState({
-    name: "",
-    price: 0,
-    stock: 0,
-    category: "",
-    condition: "",
-    weight: 0,
-    description: "",
-    length: 0,
-    width: 0,
-    height: 0,
+    name: itemData.name,
+    price: itemData.price,
+    stock: itemData.stock,
+    category: itemData.category,
+    condition: itemData.condition,
+    weight: itemData.weight,
+    description: itemData.description,
+    length: itemData.dimension.length,
+    width: itemData.dimension.width,
+    height: itemData.dimension.height,
+    itemId: itemData.id,
     images: [
       {
         downloadUrl:
@@ -57,95 +56,60 @@ const AddProduct = (props) => {
           "https://react.semantic-ui.com/images/avatar/large/molly.png",
       },
     ],
-  })  
+  });
 
-    const onChange = (key, val) => {
-      setValues({ ...values, [key]: val });
-    };
-  
-    const onSubmit = (event) => {
-      event.preventDefault();
-      submitItem();
-    };
+  const onChange = (key, val) => {
+    setValues({ ...values, [key]: val });
+  };
 
-    const [submitItem] = useMutation(ADD_ITEM_MUTATION, {
-      update(proxy, result) {
-        console.log("product added")
+  const onSubmit = (event) => {
+    event.preventDefault();
+    editItem();
+  };
 
-        const data= proxy.readQuery({
-          query: FETCH_ITEMS_QUERY
-        })
+  const [updateItem] = useMutation(UPDATE_ITEM_MUTATION, {
+    update(_, { data: { updateItem: updatedItem } }) {
+      setErrors({});
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Produk Berhasil Tersimpan",
+      });
+      props.navigation.navigate("Product Container");
+    },
+    onError(err) {
+      console.log("error");
+      setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      console.log(err.graphQLErrors[0]);
+    },
+    variables: values,
+  });
 
-        proxy.writeQuery({
-          query: FETCH_ITEMS_QUERY,
-          data: { getItems: [result.data.addItem, ...data.getItems] }
-        })
+  function editItem() {
+    values.price = parseInt(values.price);
+    values.stock = parseInt(values.stock);
+    values.weight = parseInt(values.weight);
+    values.length = parseInt(values.length);
+    values.width = parseInt(values.width);
+    values.height = parseInt(values.height);
+    updateItem();
+  }
 
-        props.navigation.navigate("Seller")
-        Toast.show({
-          topOffset: 30,
-          type: "success",
-          text1: "Produk berhasil ditambah"
-        })
-      },
-      onError(err) {
-        setErrors(err.graphQLErrors[0].extensions.exception.errors);
-        setSave(true);
-      },
-      variables: {
-        name: values.name,
-        price: parseInt(values.price),
-        stock: parseInt(values.stock),
-        category: values.category,
-        condition: values.condition,
-        weight: parseInt(values.weight),
-        description: values.description,
-        length: parseInt(values.length),
-        width: parseInt(values.width),
-        height: parseInt(values.height),
-        images: [
-          {
-            downloadUrl:
-              "https://react.semantic-ui.com/images/avatar/large/molly.png",
-          },
-          {
-            downloadUrl:
-              "https://react.semantic-ui.com/images/avatar/large/molly.png",
-          },
-        ],
-      }
-    })
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-  const renderInner = () => (
-    <View style={styles.panel}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={styles.panelTitle}>Unggah Foto</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={() => props.navigation.navigate("Image Picker")}
-      >
-        <Text style={styles.panelButtonTitle}>Pilih Dari Galeri</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={() => bottomSheet.current.snapTo(1)}
-      >
-        <Text style={styles.panelButtonTitle}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    // console.log(result);
 
-  const renderHeader = () => (
-    <View style={styles.headerRender}>
-      <View style={styles.panelHeader}>
-        <View style={styles.panelHandle} />
-      </View>
-    </View>
-  );
-
-  const bottomSheet = React.createRef();
-  const fall = new Animated.Value(1);
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
+  };
 
   return (
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
@@ -161,96 +125,58 @@ const AddProduct = (props) => {
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 90,
+            marginStart: 105,
           }}
         >
-          Tambah Produk
+          Edit Produk
         </Text>
       </View>
-      <KeyboardAvoidingView
-        enabled={true}
-        contentContainerStyle={styles.container}
+       <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 190,
+          backgroundColor: "#f2f2f2",
+        }}
       >
-        <BottomSheet
-          ref={bottomSheet}
-          snapPoints={[330, 0]}
-          renderContent={renderInner}
-          renderHeader={renderHeader}
-          initialSnap={1}
-          callbackNode={fall}
-          enabledGestureInteraction={true}
-          enabledContentTapInteraction={false}
-        />
-        <Animated.ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: height }}
-          style={{
-            opacity: Animated.add(0.1, Animated.multiply(fall, 1.0)),
-          }}
-        >
-          {props.photos ? (
-            <View
-              style={{
-                alignItems: "center",
-                marginBottom: 10,
-              }}
-            >
-              <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
-                {props.photos.map((pic) => (
+        <Animated.View>
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <TouchableOpacity onPress={pickImage}>
+              <View
+                style={{
+                  height: 100,
+                  width: 100,
+                  borderRadius: 15,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ImageBackground
+                  source={require("../assets/store.png")}
+                  style={{ height: 100, width: 100, borderRadius: 15 }}
+                >
                   <View
                     style={{
-                      height: 100,
-                      width: 100,
-                      borderRadius: 15,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <ImageBackground
-                      source={{
-                        uri: pic.uri,
-                      }}
-                      style={{ height: 100, width: 100 }}
-                      imageStyle={{ borderRadius: 20 }}
-                    ></ImageBackground>
-                  </View>
-                ))}
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View
-              style={{
-                alignItems: "center",
-                marginBottom: 15,
-              }}
-            >
-              <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
-                <View style={{ flexDirection: "row" }}>
-                  <View
-                    style={{
-                      height: 100,
-                      width: 100,
-                      borderRadius: 15,
+                      flex: 1,
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                   >
                     <Image
-                      source={require("../../../assets/plus.png")}
+                      source={require("../assets/plus.png")}
                       style={{
                         opacity: 0.8,
                         alignItems: "center",
                         justifyContent: "center",
-                        tintColor: "#000",
+                        tintColor: "#fff",
                         width: 25,
                         height: 25,
                       }}
                     />
                   </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
+                </ImageBackground>
+              </View>
+            </TouchableOpacity>
+          </View>
           <View style={styles.detailContainer}>
             <View style={{ paddingVertical: 20, marginStart: 15 }}>
               <Text style={{ fontSize: 20, fontWeight: "bold" }}>
@@ -260,7 +186,7 @@ const AddProduct = (props) => {
             <View style={styles.action}>
               <TextInput
                 name="name"
-                placeholder="Name"
+                placeholder="Nama"
                 placeholderTextColor="#666666"
                 value={values.name}
                 onChangeText={(val) => onChange("name", val)}
@@ -283,16 +209,16 @@ const AddProduct = (props) => {
                   fontWeight: "700",
                 }}
               >
-                Rp{}
+                Rp{" "}
               </Text>
               <TextInput
                 name="price"
                 placeholder="Harga"
                 placeholderTextColor="#666666"
                 keyboardType="number-pad"
+                autoCorrect={false}
                 value={values.price}
                 onChangeText={(val) => onChange("price", val)}
-                autoCorrect={false}
                 style={[
                   styles.textInput,
                   {
@@ -307,9 +233,9 @@ const AddProduct = (props) => {
                 placeholder="Stok"
                 placeholderTextColor="#666666"
                 keyboardType="number-pad"
+                autoCorrect={false}
                 value={values.stock}
                 onChangeText={(val) => onChange("stock", val)}
-                autoCorrect={false}
                 style={[
                   styles.textInput,
                   {
@@ -438,9 +364,10 @@ const AddProduct = (props) => {
                 multiline={true}
                 numberOfLines={5}
                 placeholderTextColor="#666666"
+                keyboardType="email-address"
+                autoCorrect={false}
                 value={values.description}
                 onChangeText={(val) => onChange("description", val)}
-                autoCorrect={false}
                 style={[
                   styles.textInputDescription,
                   {
@@ -449,89 +376,112 @@ const AddProduct = (props) => {
                 ]}
               />
             </View>
-            <Button style={styles.commandButton} onPress={onSubmit}>
-              <Text style={styles.panelButtonTitle}>Simpan</Text>
-            </Button>
           </View>
-        </Animated.ScrollView>
-      </KeyboardAvoidingView>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <TouchableOpacity
+              style={styles.commandButtonSave}
+              onPress={onSubmit}
+            >
+              <Text style={styles.panelButtonTitle}>Simpan</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </ScrollView> 
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
     margin: 15,
     flexDirection: "row",
     backgroundColor: "#f2f2f2",
   },
+  ImageContainer: {
+    backgroundColor: "#fff",
+    alignItems: "flex-start",
+    flexDirection: "row",
+    height: "8%",
+    marginTop: 10,
+  },
   panelButtonTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginStart: "50%",
     color: "white",
   },
   commandButton: {
-    width: "60%",
-    height: 40,
+    padding: 12,
+    borderRadius: 15,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    width: "40%",
+    marginTop: 30,
+    marginStart: 15,
+  },
+  commandButtonSave: {
+    padding: 12,
     borderRadius: 15,
     backgroundColor: "#000",
-    alignSelf: "center",
-    marginTop: 20,
-    justifyContent: "center",
+    alignItems: "center",
+    width: "90%",
+    alignSelf: "flex-end",
+    marginTop: 30,
+    marginEnd: 15,
+    marginStart: 15
   },
   detailContainer: {
     flexGrow: 1,
     backgroundColor: "#fff",
     marginTop: 25,
-    height: "100%",
+    height: height,
     borderRadius: 30,
-    marginBottom: -90,
   },
   panel: {
     padding: 20,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#FFFFFF",
+    paddingTop: 20,
   },
   headerRender: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#FFFFFF",
     shadowColor: "#333333",
     shadowOffset: { width: -1, height: -3 },
     shadowRadius: 2,
     shadowOpacity: 0.4,
     paddingTop: 20,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   panelHeader: {
     alignItems: "center",
   },
   panelHandle: {
-    width: 50,
+    width: 40,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#000",
+    backgroundColor: "#00000040",
     marginBottom: 10,
   },
   panelTitle: {
     fontSize: 27,
-    marginTop: -5,
-    fontWeight: "bold",
-    marginBottom: 20,
+    height: 35,
+  },
+  panelSubtitle: {
+    fontSize: 14,
+    color: "gray",
+    height: 30,
+    marginBottom: 10,
   },
   panelButton: {
     padding: 13,
-    borderRadius: 20,
-    width: "70%",
-    backgroundColor: "#000",
+    borderRadius: 10,
+    backgroundColor: "green",
     alignItems: "center",
     marginVertical: 7,
-    alignSelf: "center",
   },
   panelButtonTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "bold",
     color: "white",
   },
@@ -540,19 +490,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
     height: 45,
-    marginStart: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "transparent",
-    backgroundColor: "#f2f2f2",
-    borderRadius: 15,
-    marginEnd: 15,
-    paddingBottom: 5,
-  },
-  actionDescription: {
-    flexDirection: "row",
-    marginTop: 5,
-    marginBottom: 10,
-    height: 125,
     marginStart: 15,
     borderBottomWidth: 1,
     borderBottomColor: "transparent",
@@ -575,6 +512,19 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     width: "40%",
   },
+  actionDescription: {
+    flexDirection: "row",
+    marginTop: 5,
+    marginBottom: 10,
+    height: 135,
+    marginStart: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "transparent",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 15,
+    marginEnd: 15,
+    paddingBottom: 5,
+  },
   textInput: {
     flex: 1,
     marginTop: 7,
@@ -585,18 +535,12 @@ const styles = StyleSheet.create({
   },
   textInputDescription: {
     flex: 1,
-    marginTop: -77,
+    marginTop: -80,
     paddingLeft: 15,
     color: "#000",
     fontWeight: "700",
     fontSize: 16,
   },
-  pickerStyle: {
-    borderColor: "transparent",
-    alignSelf: "center",
-    flex: 1,
-    marginLeft: 5,
-  },
 });
 
-export default AddProduct;
+export default EditItem;

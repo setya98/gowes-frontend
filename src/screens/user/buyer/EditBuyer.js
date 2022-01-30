@@ -8,13 +8,15 @@ import {
   TouchableOpacity,
   Alert,
   ImageBackground,
+  Picker,
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import BottomSheet from "reanimated-bottom-sheet";
-import { Button, Text, Item, Picker } from "native-base";
+import { Button, Text, Item } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
+import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons"
 import * as ImagePicker from "expo-image-picker";
 
 import { useQuery, useMutation } from "@apollo/react-hooks";
@@ -31,59 +33,42 @@ const EditBuyer = (props) => {
 
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
-  const [cityName, setCityName] = useState("");
-  const [cityId, setCityId] = useState("");
-  const [isCitySet, setIsCity] = useState(false);
+
+  const [kotaName, setKotaName] = useState("");
+  const [kotaId, setKotaId] = useState("");
+  const [isKotaSet, setIsKota] = useState(false);
+
   const [isSaved, setSave] = useState(false);
 
-  const {loading, data} = useQuery(FETCH_USER_QUERY, {
+  const {
+    loading,
+    data: data,
+    data: cityData,
+  } = useQuery(FETCH_USER_QUERY, {
     variables: {
       userId: context.user.id,
     },
   });
   const { getUser: currentUser } = data ? data : [];
-  // const { getCities: cities } = cityData ? cityData : [];
+  const { getCities: cities } = cityData ? cityData : [];
 
-  // if (!loading && !isCitySet) {
-  //   setCityName(currentUser.address.cityName);
-  //   setCityId(currentUser.address.cityId);
-  //   setIsCity(true);
-  // }
-  // const handleChange = (value) => {
-  //   setCityName(value.split("-")[0]);
-  //   setCityId(value.split("-")[1]);
-  // };
-  // console.log(cityName, cityId);
-
-  // let userObj = {
-  //   avatar: "",
-  //   name: "",
-  //   email: "",
-  //   phone: "",
-  // };
-
-  // if (currentUser) {
-  //   userObj = {
-  //     name: currentUser.buyer.name,
-  //     email: currentUser.email,
-  //     phone: currentUser.phone,
-  //     cityName: currentUser.address.cityName,
-  //     district: currentUser.address.district,
-  //     postalCode: currentUser.address.postalCode,
-  //     detail: currentUser.address.detail,
-  //   };
-  // }
-
-  // let { onChange, onSubmit, values } = useForm(updateUserProfile, userObj);
+  if (!loading && !isKotaSet) {
+    setKotaName(currentUser.address.cityName);
+    setKotaId(currentUser.address.cityId);
+    setIsKota(true);
+  }
+  const handleChange = (value) => {
+    setKotaName(value.split("-")[0]);
+    setKotaId(value.split("-")[1]);
+  };
 
   const [values, setValues] = useState({
-    cityName: "Cimahi",
-    cityId: "23",
+    // cityName: "Cimahi",
+    // cityId: "23",
     avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
     name: currentUser.buyer.name,
     email: currentUser.email,
     phone: currentUser.phone,
-    // cityName: currentUser.address.cityName,
     birthDate: "2021-12-12",
     district: currentUser.address.district,
     postalCode: currentUser.address.postalCode,
@@ -96,18 +81,19 @@ const EditBuyer = (props) => {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    updateProfile();
+    updateUserProfile();
+    console.log(currentUser.address.cityName)
   };
 
   const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION, {
     update(_, { data: { updateUserProfile: userData } }) {
       userData.name = userData.buyer.name;
-      context.login(userData)
-      console.log("updated")
+      context.login(userData);
+      console.log("updated");
       setErrors({});
       props.navigation.navigate("Buyer");
       Toast.show({
-        topOffset: 50,
+        topOffset: 30,
         type: "success",
         text1: "Profil Berhasil Tersimpan",
       });
@@ -116,20 +102,8 @@ const EditBuyer = (props) => {
       setErrors(err.graphQLErrors[0].extensions.exception.errors);
       setSave(true);
     },
-    variables: {...values}
+    variables: { ...values, cityName: kotaName, cityId: kotaId },
   });
-
-  // const saveAlert = () =>
-  //   Alert.alert("Ubah Data", "Kamu yakin ingin ubah data?", [
-  //     {
-  //       text: "Batal",
-  //       onPress: () => navigation.navigate("Edit Buyer"),
-  //     },
-  //     {
-  //       text: "Simpan",
-  //       onPress: onSubmit,
-  //     },
-  //   ]);
 
   const openCamera = async () => {
     let result = await ImagePicker.launchCameraAsync();
@@ -189,11 +163,9 @@ const EditBuyer = (props) => {
     }
   };
 
-  
-
-  // function updateUserProfile() {
-  //   updateProfile();
-  // }
+  function updateUserProfile() {
+    updateProfile();
+  }
 
   const renderInner = () => (
     <View style={styles.panel}>
@@ -283,7 +255,13 @@ const EditBuyer = (props) => {
               >
                 <ImageBackground
                   // source={{ uri: loading ? avatar : currentUser.buyer.avatar }}
-                  style={{ height: 100, width: 100, marginTop: 15, backgroundColor: "#8c8c8c", borderRadius: 25 }}
+                  style={{
+                    height: 100,
+                    width: 100,
+                    marginTop: 15,
+                    backgroundColor: "#8c8c8c",
+                    borderRadius: 25,
+                  }}
                   imageStyle={{ borderRadius: 25 }}
                 >
                   <View
@@ -387,35 +365,43 @@ const EditBuyer = (props) => {
             <View style={{ paddingVertical: 20, marginStart: 15 }}>
               <Text style={{ fontSize: 20, fontWeight: "bold" }}>Alamat</Text>
             </View>
-            {/* <View style={styles.action}>
-              <FontAwesome
-                name="map-marker"
-                color={colors.text}
-                size={20}
-                style={{ marginStart: 15, marginTop: 12 }}
-              />
-              <Item picker style={[styles.pickerStyle]}>
-                <Picker
-                  name="city"
-                  mode="dialog"
-                  value={`${cityName}-${cityId}`}
-                  style={{ height: 20 }}
-                  onValueChange={(val) => handleChange(val)}
-                >
-                  {cities &&
-                    cities.map((city) => (
-                      <Picker.Item
-                        label={
-                          city.city_name + " - " + city.type + " " + city.city_name
-                        }
-                        value={
-                          city.type + " " + city.city_name + "-" + city.city_id
-                        }
-                      />
-                    ))}
-                </Picker>
-              </Item>
-            </View> */}
+            <View
+              style={{
+                backgroundColor: "#f2f2f2",
+                marginStart: 15,
+                marginEnd: 15,
+                marginBottom: 10,
+                borderRadius: 15,
+                paddingStart: 7,
+                height: 45,
+              }}
+            >
+              <MaterialIcon name="city-variant" size={17} style={{marginStart: 5, marginTop: 13}} /> 
+              <Picker
+                name="city"
+                mode="dialog"
+                selectedValue={`${kotaName}-${kotaId}`}
+                value={`${kotaName}-${kotaId}`}
+                style={{ marginTop: -33, marginStart: 25 }}
+                onValueChange={(val) => handleChange(val)}
+              >
+                {cities &&
+                  cities.map((city) => (
+                    <Picker.Item
+                      label={
+                        city.city_name +
+                        " - " +
+                        city.type +
+                        " " +
+                        city.city_name
+                      }
+                      value={
+                        city.type + " " + city.city_name + "-" + city.city_id
+                      }
+                    />
+                  ))}
+              </Picker>
+            </View>
             <View style={styles.action}>
               <FontAwesome
                 name="map-marker"
@@ -425,7 +411,7 @@ const EditBuyer = (props) => {
               />
               <TextInput
                 name="district"
-                placeholder="Kota"
+                placeholder="Kecamatan"
                 placeholderTextColor="#666666"
                 value={values.district}
                 onChangeText={(val) => onChange("district", val)}
@@ -580,7 +566,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    marginTop: 7,
+    marginTop: 5,
     paddingLeft: 15,
     color: "#000",
     fontWeight: "700",

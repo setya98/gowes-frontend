@@ -29,7 +29,7 @@ var { height, width } = Dimensions.get("window");
 const Checkout = (props) => {
   const context = useContext(AuthContext)
   
-  const { loading, data: cartCheckoutData, data: userData } = useQuery(
+  const { loading, data: cartCheckoutData, error, data: userData } = useQuery(
     FETCH_USER_CART_CHECKOUT_QUERY,
     {
       variables: {
@@ -37,11 +37,18 @@ const Checkout = (props) => {
       },
     }
   );
+  
   let { getUserCartItemsCheckout: cartItemsCheckout } = cartCheckoutData
     ? cartCheckoutData
     : [];
   let { getUser: user } = userData ? userData : [];
   var size = objectSize(cartItemsCheckout);
+
+  if(cartItemsCheckout){
+    console.log("cart", cartItemsCheckout)
+  } else {
+    console.log(error)
+  }
 
   useEffect(() => {
     if (size > 0) {
@@ -114,12 +121,12 @@ const Checkout = (props) => {
             <ScrollView 
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 800, backgroundColor: "#f2f2f2" }}>
-              <Container style={{backgroundColor: "#f2f2f2"}}>
+              <View style={styles.listContainer}>
                   <View style={{flexDirection: "row", marginStart: 20, marginTop: 25, marginBottom: 10}}>
                   <FontAwesome name="address-book" size={14} style={{color: "#8c8c8c"}}/>
                   <Text style={{fontSize: 15, fontWeight: "bold", color: "#8c8c8c", marginStart: 10}}>Alamat Pengiriman</Text>
                   </View>
-                  <Card.Content style={{backgroundColor: "#fff", marginStart: 15, marginEnd: 15, marginBottom: 20, borderRadius: 20}}>
+                  <Card.Content style={{backgroundColor: "#fff", marginStart: 15, marginEnd: 15, marginBottom: 20, borderRadius: 20, width: "90%", elevation: 1}}>
                     <View style={{flexDirection: "row", marginTop: 15}}>
                     <FontAwesome name="map-marker" size={20} style={{color: "#595959"}} />
                     <Text style={{fontSize: 18, fontWeight: "bold", marginStart: 10}}>{user.buyer.name}</Text>
@@ -131,7 +138,7 @@ const Checkout = (props) => {
                   <Icon name="shopping-bag" size={14} style={{color: "#8c8c8c"}}/>
                   <Text style={{fontSize: 15, fontWeight: "bold", color: "#8c8c8c", marginStart: 10}}>Pesanan</Text>
                   </View>
-                {group &&
+                  {group &&
                   Object.keys(group).map((key, index) => (
                     <CheckoutCard
                       key={index}
@@ -139,14 +146,14 @@ const Checkout = (props) => {
                       user={user}
                     />
                   ))}
-                  <View style={{flexDirection: "row", marginStart: 20, marginTop: 20, marginBottom: 10}}>
+                  <View style={{flexDirection: "row", marginStart: 20, marginTop: 20, marginBottom: 10,}}>
                   <Icon name="shopping-bag" size={14} style={{color: "#8c8c8c"}}/>
                   <Text style={{fontSize: 15, fontWeight: "bold", color: "#8c8c8c", marginStart: 10}}>Rincian Pembayaran</Text>
                   </View>
             <ItemSummaryCheckout navigation={props.navigation} user={user} />
-              </Container>
+            </View>
             </ScrollView>
-            <View style={{position: "absolute",  marginStart: 10, width: 340, bottom: 135, backgroundColor: "#fff", borderRadius: 20}}>
+            <View style={{position: "absolute", width: width, bottom: 45, backgroundColor: "#fff", borderRadius: 20}}>
             <CheckoutSummaryCard navigation={props.navigation} user={user} />
             </View>
           </SafeAreaView>
@@ -169,6 +176,12 @@ const mapStateToProps = (state) => ({
 });
 
 const styles = StyleSheet.create({
+  listContainer: {
+    height: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 10,
+  },
   emptyContainer: {
     height: height,
     flexDirection: "column",

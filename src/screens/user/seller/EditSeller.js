@@ -147,7 +147,7 @@ const EditSeller = (props) => {
       setErrors({});
       props.navigation.navigate("Seller");
       Toast.show({
-        topOffset: 50,
+        topOffset: 30,
         type: "success",
         text1: "Update Profil Toko Tersimpan",
       });
@@ -202,7 +202,7 @@ const EditSeller = (props) => {
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
       <View style={styles.header}>
         <FontAwesome
-          onPress={() => props.navigation.goBack()}
+          onPress={() => props.navigation.navigate("Seller")}
           name="chevron-left"
           size={18}
           style={{ top: 4 }}

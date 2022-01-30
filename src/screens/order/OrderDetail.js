@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 import Material from "react-native-vector-icons/MaterialCommunityIcons";
 import { Rating } from "react-native-ratings";
 import { currencyIdrConverter } from "../../util/extensions";
+import moment from "moment";
 
 import { useMutation } from "@apollo/react-hooks";
 import { UPDATE_ORDER, ADD_REVIEW_MUTATION } from "../../util/graphql";
@@ -76,9 +77,11 @@ const OrderDetail = (props) => {
 
   const [addReview] = useMutation(ADD_REVIEW_MUTATION, {
     update(_, { data: { addReview: reviewData } }) {
-      setModalVisible(false);
+      setModalVisible(false)
+      console.log("updated")
+      props.navigation.navigate("Buyer")
       Toast.show({
-        topOffset: 60,
+        topOffset: 30,
         type: "success",
         text1: "Review berhasil ditambahkan",
       });
@@ -90,7 +93,7 @@ const OrderDetail = (props) => {
       score: score,
       body: body,
       itemId: itemId,
-    },
+  }
   });
 
   const shippingCost = order.shipping.shippingCost;
@@ -110,8 +113,9 @@ const OrderDetail = (props) => {
 
   function confirmArrivalOrder() {
     setStateType("ARRIVED");
+    props.navigation.navigate("Order");
     Toast.show({
-      topOffset: 60,
+      topOffset: 30,
       type: "success",
       text1: "Pesanan dirubah ke Telah Diterima",
     });
@@ -122,8 +126,9 @@ const OrderDetail = (props) => {
   }
   function confirmCompleteOrder() {
     setStateType("COMPLETED");
+    props.navigation.navigate("Order");
     Toast.show({
-      topOffset: 60,
+      topOffset: 30,
       type: "success",
       text1: "Pesanan dirubah ke Pesanan Selesai",
     });
@@ -365,7 +370,7 @@ const OrderDetail = (props) => {
                 marginTop: 5,
               }}
             >
-              {order.state.createdAt}
+              {moment(order.state.createdAt).format('lll')}
             </Text>
           </View>
         </Card.Content>
@@ -453,7 +458,7 @@ const OrderDetail = (props) => {
             <Text style={{ fontWeight: "700", color: "#8c8c8c" }}>
               No. Resi:
             </Text>
-            {order.state.stateType === "DELIVERY" ? (
+            {order.state.stateType === "DELIVERY" || "ARRIVED" || "COMPLETED" ? (
               <Text
                 style={{
                   fontWeight: "bold",
@@ -462,8 +467,7 @@ const OrderDetail = (props) => {
                   marginTop: 5,
                 }}
               >
-                {" "}
-                AWB num : {order.shipping.awbNumber}
+               {order.shipping.awbNumber}
               </Text>
             ) : (
               <></>
@@ -585,7 +589,7 @@ const OrderDetail = (props) => {
                     setItemId(idTemp), reviewHandler();
                   }}
                 >
-                  <Text style={styles.textStyle}>Tambah Ulasan</Text>
+                  <Text style={styles.textStyle}>Simpan</Text>
                 </Pressable>
               </View>
             </View>

@@ -5,7 +5,7 @@ import { Left, Right, Body, Container, H3 } from "native-base";
 import { currencyIdrConverter } from "../util/extensions";
 
 function OrderCardDetail(props) {
-  console.log("the product", props.item);
+  // console.log("the product", props.item);
 
   var OrderItemList = <></>;
   if (props.item) {

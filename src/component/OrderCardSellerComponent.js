@@ -3,6 +3,7 @@ import { StyleSheet, Image } from "react-native";
 import { Card,Text, Avatar } from "react-native-paper";
 import { Left, Right } from "native-base";
 import OrderCardDetail from "./OrderCardDetail";
+import moment from "moment"
 
 function OrderCardSellerComponent(props) {
     console.log("test", props.order)
@@ -36,9 +37,10 @@ function OrderCardSellerComponent(props) {
             size={22}
             style={{ top: 30, backgroundColor: "#8c8c8c" }} />
           <Text style={{marginTop: 10, marginStart: 35, fontWeight:"bold", fontSize: 16}}>{order.user.buyer.name}</Text>
+          <Text style={{color: "#8c8c8c", marginTop: 10}}>{moment(order.state.createdAt).format('lll')}</Text>
       </Left>
       <Right>
-        <Text style={{marginTop: 30, marginEnd: 5, fontWeight:"bold", fontSize: 13, color:"#F18c06"}}>{order.state.stateType}</Text>
+        <Text style={{marginTop: 10, marginEnd: 5, fontWeight:"bold", fontSize: 13, color:"#F18c06"}}>{order.state.stateType}</Text>
       </Right>
       </Card.Content>
       {order.items &&

@@ -188,6 +188,7 @@ const CheckoutSummaryCard = (props) => {
             fontSize: 18,
             fontWeight: "bold",
             color: "#000",
+            marginEnd: 5,
             marginTop: 5,
           }}
         >
@@ -224,6 +225,7 @@ const styles = StyleSheet.create({
 
 CheckoutSummaryCard.propTypes = {
   checkoutItems: PropTypes.func.isRequired,
+  setAddOrder: PropTypes.func.isRequired,
   carts: PropTypes.array,
 };
 const mapStateToProps = (state) => ({
@@ -231,4 +233,4 @@ const mapStateToProps = (state) => ({
   isChange: state.orders.isChange,
 });
 
-export default connect(mapStateToProps, { checkoutItems })(CheckoutSummaryCard);
+export default connect(mapStateToProps, { checkoutItems, setAddOrder })(CheckoutSummaryCard);

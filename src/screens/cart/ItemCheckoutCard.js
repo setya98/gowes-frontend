@@ -8,6 +8,15 @@ const ItemCheckoutCard = ({ item }) => {
   return (
     <>
       <Card.Content style={{ marginTop: 20 }}>
+      <Divider
+        style={{
+          marginStart: -17,
+          height: 1,
+          marginEnd: -17,
+          marginBottom: 25,
+          marginTop: -10,
+        }}
+      />
         <View style={{ flexDirection: "row" }}>
           <Avatar.Image source={{ uri: item.item.images[0].downloadUrl }} />
           <Text
@@ -27,6 +36,7 @@ const ItemCheckoutCard = ({ item }) => {
             fontWeight: "700",
             marginStart: 80,
             marginTop: -40,
+            color: "#000"
           }}
         >
           {" "}

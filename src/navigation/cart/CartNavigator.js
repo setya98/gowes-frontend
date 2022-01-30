@@ -10,7 +10,7 @@ export default function CartNavigator({ navigation }) {
     return (
         <Stack.Navigator >
             <Stack.Screen
-                name='Cart'
+                name='Carts'
                 component={Cart}
                 options={{ headerShown: false }}
             />

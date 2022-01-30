@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Image, View } from "react-native";
+import { StyleSheet, Image, View, Dimensions } from "react-native";
 import { Card, Divider } from "react-native-paper";
 import { Text, ListItem, List, Right, Left } from "native-base";
 import SelectPicker from "react-native-form-select-picker";
+import DropDownPicker from "react-native-dropdown-picker";
 import FontAwesome from "react-native-vector-icons/FontAwesome5";
 
 import PropTypes from "prop-types";
@@ -20,6 +21,8 @@ import {
   FETCH_USER_CART_QUERY,
 } from "../../util/graphql";
 import ItemCheckoutCard from "./ItemCheckoutCard";
+
+var { width } = Dimensions.get("window")
 
 const CheckoutCard = (props) => {
   const [updateUserCartCache, {}] = useLazyQuery(FETCH_USER_CART_QUERY);
@@ -62,7 +65,6 @@ const CheckoutCard = (props) => {
       service: courierSplit[1],
       amount: parseInt(courierSplit[2]),
     });
-    console.log("kurir", courier);
   };
 
   const [addOrder] = useMutation(ADD_ORDER, {
@@ -207,7 +209,7 @@ const CheckoutCard = (props) => {
     }
 
     cartCheckoutScreen = (
-      <Card style={{borderRadius: 20, marginStart: 15, marginEnd: 15, marginTop: 20}}>
+      <Card style={{borderRadius: 20, marginStart: 15, marginEnd: 25, marginTop: 20, width: "90%"}}>
         <Card.Content style={{flexDirection: "row", marginBottom: 10}}>
         <Image
             source={require("../../assets/store.png")}
@@ -222,7 +224,7 @@ const CheckoutCard = (props) => {
         </Card.Content>
         {props.cartItem &&
           props.cartItem.map((item, index) => (
-            <ItemCheckoutCard key={index} item={item} />
+            <ItemCheckoutCard key={index} item={item}/>
           ))}
         <Card.Content>
         <Divider style={{height: 1, marginTop: 10, marginStart: -16, marginEnd: -16}}/>
@@ -230,14 +232,16 @@ const CheckoutCard = (props) => {
         <FontAwesome name="truck" size={13} style={{marginTop: 15, color: "#595959"}} />
         <Text style={{fontSize: 15, marginTop: 15, marginStart: 10, fontWeight: "bold", color: "#595959"}}>Metode Pengiriman</Text>
         </View>
+        <View style={{flexDirection: "row", justifyContent: "space-between", borderColor: "#8c8c8c", borderStyle: "dotted", borderWidth: 1, borderRadius: 15, marginTop: 10, marginBottom: 10}}>
           <SelectPicker
             onValueChange={(value) => {
               console.log("chosen courier", value), courierChange(value);
             }}
             placeholder="Pilih jasa pengiriman"
             placeholderStyle={{fontWeight: "600"}}
-            doneButtonTextStyle={{fontWeight: "bold", color: "#000"}}
+            style={{width: "90%"}}
           >
+            
             {Object.values(options).map((val) => (
               <SelectPicker.Item
                 label={val.text}
@@ -246,6 +250,12 @@ const CheckoutCard = (props) => {
               />
             ))}
           </SelectPicker>
+          <FontAwesome 
+            name="sort-down"
+            size={15}
+            style={{color: "#000", marginEnd: 10, marginTop: 5}}
+            />
+          </View>
         </Card.Content>
       </Card>
     );

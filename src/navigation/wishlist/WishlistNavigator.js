@@ -9,7 +9,7 @@ export default function WishlistNavigator({ navigation }) {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name='Wishlist'
+                name='Wishlist Screen'
                 component={Wishlist}
                 options={{ headerShown: false }}
             />

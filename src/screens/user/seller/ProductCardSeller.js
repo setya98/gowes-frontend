@@ -6,7 +6,7 @@ import {
   Image,
   TouchableWithoutFeedback,
 } from "react-native";
-import { Button, Text } from "native-base";
+import { Text } from "native-base";
 import { currencyIdrConverter } from "../../../util/extensions";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@apollo/client";
@@ -16,9 +16,7 @@ var { width } = Dimensions.get("window");
 
 const ProductCardSeller = (props) => {
   const navigation = useNavigation();
-  const { item, refetchItems } = props;
-
-  // console.log("props seller", props)
+  const { item} = props;
 
   const { loading, data: data } = useQuery(FETCH_SINGLE_ITEM_QUERY, {
     variables: {
@@ -49,7 +47,6 @@ const ProductCardSeller = (props) => {
               navigation.navigate("Edit Product", {
                 item: props.item,
                 product: data,
-                refetchItems: props.refetchItems,
               })
             }
           >

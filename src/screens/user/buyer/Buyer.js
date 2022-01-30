@@ -16,10 +16,11 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { Card, Avatar } from "react-native-paper";
 import { useQuery } from "@apollo/react-hooks";
 import { AuthContext } from "../../../context/auth";
-import { FETCH_USER_QUERY } from "../../../util/graphql";
+import { FETCH_USER_QUERY, FETCH_SINGLE_ITEM_QUERY } from "../../../util/graphql";
 
 const Buyer = (props) => {
   const { user, logout } = useContext(AuthContext);
+
   const { loading, data: data } = useQuery(FETCH_USER_QUERY, {
     variables: {
       userId: user.id,
@@ -240,7 +241,8 @@ const Buyer = (props) => {
                 }}
               >
                 <TouchableOpacity
-                  onPress={() => props.navigation.navigate("Review Product")}
+                  onPress={() => props.navigation.navigate("Add Review" )
+                }
                 >
                   <StarIcon
                     name="star"

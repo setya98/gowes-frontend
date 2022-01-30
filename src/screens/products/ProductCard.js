@@ -1,54 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
   Dimensions,
   Image,
-  TouchableWithoutFeedback,
 } from "react-native";
 import { Text } from "native-base";
-import { connect } from "react-redux";
-import ButtonAdd from "../../component/ButtonAdd";
 import { currencyIdrConverter } from "../../util/extensions";
 import StarIcon from "react-native-vector-icons/AntDesign";
-import FontAwesome from "react-native-vector-icons/FontAwesome"
-import Toast from "react-native-toast-message"
-
-import { useMutation, useQuery } from "@apollo/client"
-import { ADD_TO_CART_MUTATION, FETCH_SINGLE_ITEM_QUERY } from "../../util/graphql"
-
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 var { width } = Dimensions.get("window");
 
 const ProductCard = (props) => {
   const { item } = props;
-
-  // const { loading, data: data } = useQuery(FETCH_SINGLE_ITEM_QUERY, {
-  //   variables: {
-  //     itemId: item.id,
-  //   },
-  // });
-
-  const [addToCart] = useMutation(ADD_TO_CART_MUTATION, {
-    variables: {
-      itemId: item.id,
-      // isChecked: false,
-    },
-    onError(err) {
-      // setErrors(err.graphQLErrors[0].extensions.exception.errors);
-      console.log("error bro");
-    },
-  })
-
-  function addItemCart() {
-    addToCart();
-    Toast.show({
-      topOffset: 30,
-      type: "success",
-      text1: "Produk ditambahkan ke bag",
-    });
-  }
-
+  
   return (
     <View style={styles.container}>
       <Image
@@ -58,38 +24,54 @@ const ProductCard = (props) => {
       />
       <View style={styles.card} />
       <Text style={styles.title}>
-      {item.name.length > 15 ? item.name.substring(0, 18 - 3) + "..." : item.name}
+        {item.name.length > 15
+          ? item.name.substring(0, 18 - 3) + "..."
+          : item.name}
       </Text>
-      <Text style={styles.price}>Rp {currencyIdrConverter(item.price, 0, ".", ",")}</Text>
-      <View style={{flexDirection: "row", marginTop: -10, marginStart: -95}}>
-      <StarIcon name="star" size={12} color={"#F18c06"} style={{ marginTop: 8, alignSelf:"flex-start" }}/>
-      <Text style={{color: "#595959", top: 4, fontWeight: "bold", fontSize: 17, marginStart: 5}}>4.8</Text>
-      </View>
-      <View style={{flexDirection: "row", alignSelf: "flex-start"}}>
-      <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 8}} />
-      <Text style={{color: "#8c8c8c", top: 6, fontWeight: "bold", fontSize: 15, marginStart: 7}}>{item.user.address.cityName}</Text>
-      </View>
-      {/* {item > 0 ? ( */}
-        <TouchableWithoutFeedback
-          // onPress={addItemCart}
+      <Text style={styles.price}>
+        Rp {currencyIdrConverter(item.price, 0, ".", ",")}
+      </Text>
+      <View style={{ flexDirection: "row", marginTop: -3, marginStart: -95 }}>
+        <StarIcon
+          name="star"
+          size={12}
+          color={"#F18c06"}
+          style={{ marginTop: 8, alignSelf: "flex-start" }}
+        />
+        <Text
+          style={{
+            color: "#595959",
+            top: 4,
+            fontWeight: "bold",
+            fontSize: 17,
+            marginStart: 5,
+          }}
         >
-          <View style={{width: "100%", marginTop: 20, marginBottom: -10}}>
-            <ButtonAdd />
-          </View>
-        </TouchableWithoutFeedback>
-      {/* ) : (
-        <Text style={{ marginTop: 20 }}>Currently Unavailable</Text>
-      )} */}
+          4.8
+        </Text>
+      </View>
+      <View style={{ flexDirection: "row", alignSelf: "flex-start", marginBottom: 3 }}>
+        <FontAwesome
+          name="map-marker"
+          color={"#8c8c8c"}
+          size={14}
+          style={{ marginTop: 8 }}
+        />
+        <Text
+          style={{
+            color: "#8c8c8c",
+            top: 6,
+            fontWeight: "bold",
+            fontSize: 15,
+            marginStart: 7,
+          }}
+        >
+          {item.user.address.cityName}
+        </Text>
+      </View>
     </View>
   );
 };
-
-// const mapDisptachToProps = (dispatch) => {
-//   return {
-//     addItemToCart: (product) =>
-//       dispatch(actions.addToCart({ quantify: 1, product })),
-//   };
-// };
 
 const styles = StyleSheet.create({
   container: {

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View, SafeAreaView, Dimensions } from "react-native";
+import { ScrollView, StyleSheet, Text, View, SafeAreaView, Dimensions, ActivityIndicator, Image } from "react-native";
 import { Card, Chip } from "react-native-paper";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { ListItem } from "native-base";
 import Icon from "react-native-vector-icons/AntDesign";
 
 import { useQuery } from "@apollo/react-hooks";
-import { FETCH_ITEM_QUERY } from "../../util/graphql";
+import { FETCH_ITEM_REVIEWS } from "../../util/graphql";
 
 import ProductReviewCard from "./ProductReviewCard";
 
@@ -16,14 +16,12 @@ const ProductReview = (props) => {
   const item = props.route.params.item
   const [activeChip, setActiveChip] = useState("All");
   const [active, setActive] = useState(-1);
-  const { loading, data } = useQuery(FETCH_ITEM_QUERY, {
+
+  const { loading, data } = useQuery(FETCH_ITEM_REVIEWS, {
     variables: {
       itemId: item.id
     }
   })
-
-  console.log(item.id)
-
   const { getItemReviews: reviews } = data ? data : []
 
   const handleChip = (name) => {
@@ -97,8 +95,7 @@ const ProductReview = (props) => {
           backgroundColor: "#f2f2f2",
         }}
       >
-          <Card style={{marginTop: -15, backgroundColor: "#f2f2f2"}}>
-          <Card.Content style={{marginStart: -20}}>
+          <Card.Content style={{marginStart: -20, marginTop: -5, backgroundColor: "#f2f2f2"}}>
             <ScrollView
               horizontal={true}
               showsHorizontalScrollIndicator={false}
@@ -112,7 +109,7 @@ const ProductReview = (props) => {
                   marginTop: -5,
                   height: 75,
                   flexDirection: "row",
-                  borderBottomColor: "transparent"
+                  borderBottomColor: "transparent",
                 }}
               >
                 <Chip
@@ -136,6 +133,7 @@ const ProductReview = (props) => {
                   onPress={() => handleChip("1")}
                 >
                   <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
+                  <Text style={{fontSize: 16}}>1</Text>
                 </Chip>
                 <Chip
                   textStyle={styles.text}
@@ -147,7 +145,7 @@ const ProductReview = (props) => {
                   onPress={() => handleChip("2")}
                 >
                   <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
+                  <Text style={{fontSize: 16}}>2</Text>
                 </Chip>
                 <Chip
                   textStyle={styles.text}
@@ -159,8 +157,7 @@ const ProductReview = (props) => {
                   onPress={() => handleChip("3")}
                 >
                   <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
+                  <Text style={{fontSize: 16}}>3</Text>
                 </Chip>
                 <Chip
                   textStyle={styles.text}
@@ -172,9 +169,7 @@ const ProductReview = (props) => {
                   onPress={() => handleChip("4")}
                 >
                   <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
+                  <Text style={{fontSize: 16}}>4</Text>
                 </Chip>
                 <Chip
                   textStyle={styles.text}
@@ -186,15 +181,11 @@ const ProductReview = (props) => {
                   onPress={() => handleChip("5")}
                 >
                   <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
-                  <Icon name="star" style={{ color: "#F18c06", fontSize: 20 }} />
+                  <Text style={{fontSize: 16}}>5</Text>
                 </Chip>
               </ListItem>
             </ScrollView>
       </Card.Content>
-      </Card>
       {!loading ? (
         reviewList.length > 0 ? (
           <Card.Content>
@@ -208,23 +199,19 @@ const ProductReview = (props) => {
             }
           </Card.Content>
         ) : (
-          <Card style={{backgroundColor: "#f2f2f2", height: "100%"}}>
-            <Card.Content>
+            <Card.Content style={{backgroundColor: "#f2f2f2", height: "100%", marginTop: "15%"}}>
               <Image 
               source={require("../../assets/ilus-empty.webp")}
               resizeMode="contain"
               style={{width: 250, height: 250, alignSelf: "center", marginTop: -15}}
               />
-              <Text style={{alignSelf: "center", fontSize: 18, fontWeight: "bold"}}>Kamu belum ulas barang</Text>
+              <Text style={{alignSelf: "center", fontSize: 18, fontWeight: "bold"}}>Belum ada review nih</Text>
             </Card.Content>
-          </Card>
         )
       ) : (
-        <Card style={{backgroundColor: "#f2f2f2", height: "100%"}}>
-          <Card.Content>
+          <Card.Content style={{backgroundColor: "#f2f2f2", height: "100%"}}>
           <ActivityIndicator style={{justifyContent: "center", alignSelf:"center", marginTop: "50%"}} size="large" color="#000" />
           </Card.Content>
-        </Card>
       )}
       </ScrollView>
     </SafeAreaView>
@@ -246,6 +233,7 @@ const styles = StyleSheet.create({
       center: {
         justifyContent: "center",
         alignItems: "center",
+        borderColor: "#8c8c8c"
       },
       active: {
         backgroundColor: '#fff'

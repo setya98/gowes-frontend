@@ -71,7 +71,7 @@ const Seller = (props) => {
       ) : (
         <SafeAreaView style={{ backgroundColor: "#fff" }}>
       <View style={styles.header}>
-        <Icon onPress={() => props.navigation.goBack()}
+        <Icon onPress={() => props.navigation.navigate("Buyer")}
         name="chevron-left" size={18} style={{top: 4}} />
         <Text
           style={{
@@ -101,16 +101,19 @@ const Seller = (props) => {
             {currentUser.seller.username}
             </Text>
           </TouchableWithoutFeedback>
-          <View style={{flexDirection: "row", width: 100, marginStart: -75}}>
-          <FontAwesome name="map-marker" color={"#8c8c8c"} size={14} style={{marginTop: 28, }} />
-          <Text style={{color: "#595959", fontWeight: "bold", marginStart: 7, marginTop: 26}}>{currentUser.address.cityName}</Text>
           </View>
-          <StarIcon name="star" size={20} color={"#F18c06"} style={{marginStart: -105, marginTop: 55, }}/> 
-          <Text style={{color: "#000", top: 54, fontWeight: "bold", fontSize: 22, marginStart: 5}}>4.8</Text>
-          <Text style={{color: "#595959", top: 58, fontWeight: "bold", marginStart: 7}}>Rating</Text>
+
+          <View style={{flexDirection: "row", marginStart: 85, marginTop: -45 }}>
+          <FontAwesome name="map-marker" color={"#8c8c8c"} size={14}  />
+          <Text style={{color: "#595959", fontWeight: "bold", marginStart: 7, marginTop: -2}}>{currentUser.address.cityName}</Text>
           </View>
+          <View style={{flexDirection: "row", marginStart: 80, marginTop: 10}}>
+          <StarIcon name="star" size={20} color={"#F18c06"}/> 
+          <Text style={{color: "#000",  fontWeight: "bold", fontSize: 22, marginStart: 5}}>4.8</Text>
+          <Text style={{color: "#595959",  fontWeight: "bold", marginStart: 7, marginTop: 5}}>Rating</Text>
+          </View>
+        
         <View style={styles.detailContainer}>
-         
         <View style={{flexDirection:"row", justifyContent: "space-between", paddingHorizontal: 20}}>
         <TouchableOpacity
            onPress={() => props.navigation.navigate("Order Seller")}>

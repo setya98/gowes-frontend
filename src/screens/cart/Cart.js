@@ -23,12 +23,13 @@ import CardGroup from "./CardGroup";
 var { height, width } = Dimensions.get("window");
 
 const Cart = (props) => {
-  const { loading, data, refetch } = useQuery(FETCH_USER_CART_QUERY);
+  const { loading, error, data, refetch } = useQuery(FETCH_USER_CART_QUERY);
   let { getUserCartItems: cartItems } = data ? data : [];
   var size = objectSize(cartItems);
 
   useEffect(() => {
     if (size > 0) {
+      // console.log("size", size)
       let group = cartItems.reduce((r, a) => {
         r[a.item.user.id] = [...(r[a.item.user.id] || []), a];
         return r;
@@ -44,6 +45,7 @@ const Cart = (props) => {
         }
       });
       props.checkoutItems(carts, !props.isChange);
+      // console.log("object", carts)
     }
   }, [size]); // <-- empty dependency array
 
@@ -56,17 +58,25 @@ const Cart = (props) => {
           width: 250,
           height: 250,
           alignSelf: "center",
-          marginTop: "-50%"
+          marginTop: "-50%",
         }}
       />
       <Text style={{ fontSize: 18, fontWeight: "bold" }}>
         Bag kamu masih kosong
       </Text>
-      <Text style={{ fontSize: 15, fontWeight: "700", color: "#8c8c8c", marginTop: 15 }}>
+      <Text
+        style={{
+          fontSize: 15,
+          fontWeight: "700",
+          color: "#8c8c8c",
+          marginTop: 15,
+        }}
+      >
         Belanja barang dulu, lalu tambah disini
       </Text>
     </Container>
   );
+
   if (!loading) {
     if (size > 0) {
       let group = cartItems.reduce((r, a) => {
@@ -80,7 +90,7 @@ const Cart = (props) => {
             <View style={styles.header}>
               <FontAwesome
                 onPress={() => props.navigation.goBack()}
-                name="chevron-left"
+                name="close"
                 size={18}
                 style={{ top: 4 }}
               />
@@ -95,10 +105,11 @@ const Cart = (props) => {
                 Bag
               </Text>
             </View>
-            <ScrollView 
+            <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: "100%" }}>
-              <Container>
+              contentContainerStyle={{ paddingBottom: height }}
+            >
+              <View style={styles.listContainer}>
                 {group &&
                   Object.keys(group).map((key, index) => (
                     <CardGroup
@@ -107,10 +118,21 @@ const Cart = (props) => {
                       refetchCartQuery={refetch}
                     />
                   ))}
-              </Container>
+              </View>
             </ScrollView>
-            <View style={{position: "absolute",  marginStart: 10, width: 340, justifyContent: "space-between", bottom: 105}}>
-            <ItemSummaryCart navigation={props.navigation} />
+            <View
+              style={{
+                position: "absolute",
+                marginStart: 20,
+                width: 320,
+                justifyContent: "space-between",
+                bottom: 105,
+                backgroundColor: "#fff",
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+              }}
+            >
+              <ItemSummaryCart navigation={props.navigation} />
             </View>
           </SafeAreaView>
         </>
@@ -132,6 +154,14 @@ const mapStateToProps = (state) => ({
 });
 
 const styles = StyleSheet.create({
+  listContainer: {
+    height: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    backgroundColor: "#fff",
+    marginTop: 10,
+    marginStart: 17
+  },
   emptyContainer: {
     height: height,
     flexDirection: "column",

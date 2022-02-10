@@ -161,6 +161,7 @@ export const FETCH_ITEM_QUERY = gql`
         height
       }
       images {
+        id
         downloadUrl
       }
       bookmarkedBy {
@@ -177,6 +178,7 @@ export const FETCH_ITEM_QUERY = gql`
         seller {
           id
           username
+          avatar
         }
       }
     }

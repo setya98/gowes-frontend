@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -6,22 +6,26 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
-  Alert,
+  Image,
   ImageBackground,
   Picker,
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import BottomSheet from "reanimated-bottom-sheet";
+import { connect } from "react-redux";
 import { Button, Text, Item } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
-import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons"
+import PropTypes from "prop-types";
+import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as ImagePicker from "expo-image-picker";
 
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { CommonActions } from "@react-navigation/native";
+import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
 import { AuthContext } from "../../../context/auth";
+import { storage, storageRef, uploadTask } from "../../../firebase";
 import { useForm } from "../../../util/hooks";
 import {
   FETCH_USER_QUERY,
@@ -30,13 +34,13 @@ import {
 
 const EditBuyer = (props) => {
   const { colors } = useTheme();
-
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
 
   const [kotaName, setKotaName] = useState("");
   const [kotaId, setKotaId] = useState("");
   const [isKotaSet, setIsKota] = useState(false);
+  const [avatar, setAvatar] = useState("https://react.semantic-ui.com/images/avatar/large/molly.png");
 
   const [isSaved, setSave] = useState(false);
 
@@ -62,28 +66,48 @@ const EditBuyer = (props) => {
     setKotaId(value.split("-")[1]);
   };
 
-  const [values, setValues] = useState({
-    // cityName: "Cimahi",
-    // cityId: "23",
-    avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
-    name: currentUser.buyer.name,
-    email: currentUser.email,
-    phone: currentUser.phone,
-    birthDate: "2021-12-12",
-    district: currentUser.address.district,
-    postalCode: currentUser.address.postalCode,
-    detail: currentUser.address.detail,
-  });
-
-  const onChange = (key, val) => {
-    setValues({ ...values, [key]: val });
+  let userObj = {
+    avatar: "",
+    name: "",
+    phone: "",
+    email: "",
+    birthDate: "",
   };
 
-  const onSubmit = (event) => {
-    event.preventDefault();
-    updateUserProfile();
-    console.log(currentUser.address.cityName)
-  };
+  if (currentUser) {
+    userObj = {
+      name: currentUser.buyer.name,
+      email: currentUser.email,
+      phone: currentUser.phone,
+      birthDate: "2021-12-12",
+      district: currentUser.address.district,
+      postalCode: currentUser.address.postalCode,
+      detail: currentUser.address.detail,
+    };
+  }
+  
+  let { onChange, onSubmit, values } = useForm(updateUserProfile, userObj);
+
+  // const [values, setValues] = useState({
+  //   avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //   name: currentUser.buyer.name,
+  //   email: currentUser.email,
+  //   phone: currentUser.phone,
+  //   birthDate: "2021-12-12",
+  //   district: currentUser.address.district,
+  //   postalCode: currentUser.address.postalCode,
+  //   detail: currentUser.address.detail,
+  // });
+
+  // const onChange = (key, val) => {
+  //   setValues({ ...values, [key]: val });
+  // };
+
+  // const onSubmit = (event) => {
+  //   event.preventDefault();
+  //   updateUserProfile();
+  //   console.log(currentUser.address.cityName)
+  // };
 
   const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION, {
     update(_, { data: { updateUserProfile: userData } }) {
@@ -160,10 +184,16 @@ const EditBuyer = (props) => {
             });
         }
       );
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Update Foto Profil Berhasil",
+      });
     }
   };
 
   function updateUserProfile() {
+    values.avatar = avatar
     updateProfile();
   }
 
@@ -195,7 +225,7 @@ const EditBuyer = (props) => {
     </View>
   );
 
-  const bottomSheet = React.forwardRef();
+  const bottomSheet = React.createRef();
   const fall = new Animated.Value(1);
 
   return (
@@ -227,7 +257,7 @@ const EditBuyer = (props) => {
       >
         <BottomSheet
           ref={bottomSheet}
-          snapPoints={[330, 0]}
+          snapPoints={[500, -200]}
           renderContent={renderInner}
           renderHeader={renderHeader}
           initialSnap={1}
@@ -242,7 +272,7 @@ const EditBuyer = (props) => {
             opacity: Animated.add(0.1, Animated.multiply(fall, 1.0)),
           }}
         >
-          <View style={{ alignItems: "center", marginBottom: 10 }}>
+         <View style={{ alignItems: "center", marginBottom: 10 }}>
             <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
               <View
                 style={{
@@ -254,7 +284,7 @@ const EditBuyer = (props) => {
                 }}
               >
                 <ImageBackground
-                  // source={{ uri: loading ? avatar : currentUser.buyer.avatar }}
+                  source={{ uri: loading ? avatar : currentUser.buyer.avatar }}
                   style={{
                     height: 100,
                     width: 100,
@@ -376,7 +406,11 @@ const EditBuyer = (props) => {
                 height: 45,
               }}
             >
-              <MaterialIcon name="city-variant" size={17} style={{marginStart: 5, marginTop: 13}} /> 
+              <MaterialIcon
+                name="city-variant"
+                size={17}
+                style={{ marginStart: 5, marginTop: 13 }}
+              />
               <Picker
                 name="city"
                 mode="dialog"
@@ -509,11 +543,11 @@ const styles = StyleSheet.create({
   },
   panel: {
     padding: 20,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#cfcfcf",
   },
   headerRender: {
-    backgroundColor: "#f2f2f2",
-    shadowColor: "#333333",
+    backgroundColor: "#cfcfcf",
+    shadowColor: "#333",
     shadowOffset: { width: -1, height: -3 },
     shadowRadius: 2,
     shadowOpacity: 0.4,
@@ -580,4 +614,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditBuyer;
+EditBuyer.propTypes = {
+  uploadMultipleImage: PropTypes.func.isRequired,
+  photos: PropTypes.array,
+};
+const mapStateToProps = (state) => ({
+  photos: state.imagePicker.photos,
+});
+
+export default connect(mapStateToProps, { uploadMultipleImage })(EditBuyer);

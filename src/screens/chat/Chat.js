@@ -25,6 +25,7 @@ import {
 import { FETCH_CHATS_QUERY } from "../../util/graphql";
 import { AuthContext } from "../../context/auth";
 import { useQuery } from "@apollo/client";
+import { LogBox } from "react-native";
 
 var { height, width } = Dimensions.get("window");
 
@@ -32,6 +33,7 @@ const Chat = (props) => {
   const { user } = useContext(AuthContext);
   const { loading, data } = useQuery(FETCH_CHATS_QUERY);
   const { getChats: chats } = data ? data : [];
+
   const receiver = (users) => {
     let userReceiver;
     if (users[0].id !== user.id) {
@@ -73,6 +75,7 @@ const Chat = (props) => {
             }}
           >
             <FlatList
+              scrollEnabled={false}
               style={{ marginStart: 15, marginEnd: 15 }}
               data={chats}
               keyExtractor={(item) => item.id}
@@ -108,26 +111,26 @@ const Chat = (props) => {
         </SafeAreaView>
       ) : (
         <Card.Content>
-        <Image
-          source={require("../../assets/ilus-empty.webp")}
-          resizeMode="contain"
-          style={{
-            width: 250,
-            height: 250,
-            alignSelf: "center",
-            marginTop: "25%",
-          }}
-        />
-        <Text
-          style={{
-            alignSelf: "center",
-            fontSize: 18,
-            fontWeight: "bold",
-          }}
-        >
-          Kamu belum punya pesan masuk
-        </Text>
-      </Card.Content>
+          <Image
+            source={require("../../assets/ilus-empty.webp")}
+            resizeMode="contain"
+            style={{
+              width: 250,
+              height: 250,
+              alignSelf: "center",
+              marginTop: "25%",
+            }}
+          />
+          <Text
+            style={{
+              alignSelf: "center",
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
+          >
+            Kamu belum punya pesan masuk
+          </Text>
+        </Card.Content>
       )}
     </>
   );

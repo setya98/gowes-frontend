@@ -9,12 +9,17 @@ const ImageSlide = ({ images }) => {
 
   return (
     <View>
-      <Swiper style={{ height: 260 }}>
+      <Swiper style={{ height: 350 }}
+      dotColor={"#f2f2f2"}
+      dotStyle={{ marginBottom: 30, height: 6, width: 6, borderRadius: 20, marginRight: 8 }}
+      activeDotStyle={{ marginBottom: 30, height: 13, width: 13, borderRadius: 20, marginRight: 8 }}
+      >
         {images.map((image, index) => (
           <Image
           key={index}
           source={{ uri: image.downloadUrl }}
-          style={{ width: width, height: 400 }}
+          style={{ width: width, height: 350 }}
+          resizeMode="cover"
         />
         ))}
       </Swiper>

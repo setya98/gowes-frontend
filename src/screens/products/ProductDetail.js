@@ -13,7 +13,6 @@ import { Text } from "native-base";
 import { Avatar, Divider } from "react-native-paper";
 import Icon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import Swiper from "react-native-swiper";
 
 import TitleHeader from "../../component/TitleHeader";
 import BorderPrice from "../../component/BorderPrice";
@@ -28,7 +27,7 @@ import ButtonWishlist from "../../component/ButtonWishlist";
 import ItemButtonOrder from "../../component/ItemButtonOrder";
 import EditButtonItem from "../../component/EditButtonItem";
 
-var { height } = Dimensions.get("window");
+var { height, width } = Dimensions.get("window");
 
 const ProductDetail = (props) => {
   const itemUserId = props.route.params.userId;
@@ -39,6 +38,7 @@ const ProductDetail = (props) => {
   const {
     loading: loadingItem,
     data: itemData,
+    data: itemReview,
     data: chatData,
   } = useQuery(FETCH_ITEM_QUERY, {
     variables: {
@@ -50,12 +50,14 @@ const ProductDetail = (props) => {
     },
   });
   const { getItem: itemDetail } = itemData ? itemData : [];
+  const { getItemReviews: items } = itemReview ? itemReview : [];
   const { isChatExists } = chatData ? chatData : [];
 
   if(!loadingItem){
     console.log("item", item.id)
     console.log("itemUser", itemUserId)
     console.log("context", context.user.id)
+    console.log("review", items)
   }
 
   return (
@@ -87,16 +89,14 @@ const ProductDetail = (props) => {
           >
             <View style={{ height: "100%", flexGrow: 1 }}>
               <View style={styles.ImageContainer}>
-                <Swiper style={{ height: 260 }} showsButtons={true}>
-                  <Image
-                    source={{ uri: itemDetail.images[0].downloadUrl }}
-                    style={{
-                      width: "100%",
-                      height: 260,
-                      resizeMode: "contain",
-                    }}
-                  />
-                </Swiper>
+                  {/* <ImageSlider
+                    // data={{ uri: itemDetail.images[0].downloadUrl }}
+                    autoPlay={false}
+                    closeIconColor="#fff"
+                    indicatorContainerStyle={{top: -30}}
+                    inActiveIndicatorStyle={{backgroundColor: "#Bfbfbf"}}
+                  /> */}
+                  <ImageSlide images={itemDetail.images} />
               </View>
               <View style={styles.detailContainer}>
                 <View style={styles.line} />
@@ -124,7 +124,7 @@ const ProductDetail = (props) => {
                     }
                   >
                     <Icon name="star" size={20} color={"#F18c06"} />
-                    <Text style={styles.textRating}>{itemDetail.score}</Text>
+                    <Text style={styles.textRating}>{items.score}</Text>
                   </TouchableOpacity>
                   <Text
                     style={{
@@ -160,9 +160,7 @@ const ProductDetail = (props) => {
                 <Divider style={{ height: 1, marginTop: 5 }}></Divider>
                 <Avatar.Image
                   size={40}
-                  source={{
-                    uri: "https://react.semantic-ui.com/images/avatar/large/molly.png",
-                  }}
+                  source={{ uri: itemDetail.user.seller.avatar }}
                   style={{
                     marginStart: 15,
                     marginTop: 28,
@@ -357,21 +355,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+    paddingBottom: 25,
+    marginBottom: 20
   },
   image: {
-    width: "100%",
+    width: 500,
     height: 250,
   },
   detailContainer: {
     flexGrow: 1,
     backgroundColor: "#f2f2f2",
-    elevation: 10,
+    elevation: 20,
     shadowOffset: { width: 0, height: 2 },
     shadowColor: "#000",
     shadowOpacity: 0.5,
     height: "100%",
-    borderTopRightRadius: 40,
-    borderTopLeftRadius: 40,
+    borderTopRightRadius: 30,
+    borderTopLeftRadius: 30,
+    top: -85
   },
   text: {
     marginLeft: 20,

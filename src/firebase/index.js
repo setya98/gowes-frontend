@@ -1,18 +1,20 @@
-import firebase from 'firebase/app';
-import 'firebase/storage';
+import firebase from "firebase/app"
+import "firebase/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBOzyG4fun0gFJK2wHgStHGVHA05T989M8",
-    authDomain: "gowes-marketplace-react.firebaseapp.com",
-    projectId: "gowes-marketplace-react",
-    storageBucket: "gowes-marketplace-react.appspot.com",
-    messagingSenderId: "765299973278",
-    appId: "1:765299973278:web:8f62e14bb2ff41bc07af8f",
-    measurementId: "G-9THGJK5M48"
+  apiKey: "AIzaSyAz_hw_3N05Ext1mtzeT8xe3rR2pixFP8w",
+  authDomain: "gowesapp-c8c7c.firebaseapp.com",
+  databaseURL: "https://gowesapp-c8c7c.firebaseio.com",
+  projectId: "gowesapp-c8c7c",
+  storageBucket: "gowesapp-c8c7c.appspot.com",
+  messagingSenderId: "402584781476",
+  appId: "1:402584781476:web:55c3954d124c7796775c31",
+  measurementId: "G-7EB0PY4K61"
   };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
 const storage = firebase.storage();
 
-export { storage, firebase as default};
+export { storage, firebase as default };

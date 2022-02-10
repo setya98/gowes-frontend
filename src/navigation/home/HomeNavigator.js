@@ -6,6 +6,7 @@ import ChatNavigator from "../chat/ChatNavigator";
 import SearchedProduct from "../../screens/products/SearchedProduct";
 import ProductReview from "../../screens/review/ProductReview";
 import EditProduct from "../../screens/user/seller/EditProduct";
+import ImagePicker from "../../screens/user/seller/ImagePicker";
 
 const Stack = createStackNavigator()
 
@@ -41,6 +42,11 @@ export default function HomeNavigator({ navigation }) {
                 name='Edit Product'
                 component={EditProduct}
                 options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Image Picker'
+                component={ImagePicker}
+                options={{ headerRightContainerStyle: { paddingRight: 20 } }}
             />
         </Stack.Navigator>
     )

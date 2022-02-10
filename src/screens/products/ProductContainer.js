@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, StatusBar } from "react-native";
 import {
   Container,
   ListItem,
@@ -7,14 +7,14 @@ import {
   Item,
   Icon,
   Input,
-  Text,
+  Text
 } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import ProductList from "./ProductList";
 import SearchedProduct from "./SearchedProduct";
 import Banner from "../../component/Banner";
 import TitleHeader from "../../component/TitleHeader";
-import { Card, Chip } from "react-native-paper";
+import { Chip } from "react-native-paper";
 import { useQuery } from "@apollo/react-hooks";
 import { FETCH_ITEMS_QUERY } from "../../util/graphql";
 import { AuthContext } from "../../context/auth"
@@ -30,6 +30,8 @@ const ProductContainer = (props) => {
   const context = useContext(AuthContext)
   const { loading, data, refetch } = useQuery(FETCH_ITEMS_QUERY);
   const { getItems: items } = data ? data : [];
+
+  // console.log("cari", productsFiltered)
   
   useEffect(() => {
     setProducts(items);
@@ -104,6 +106,11 @@ const ProductContainer = (props) => {
   }
  
   return (
+    <>
+    <StatusBar
+      barStyle="dark-content"
+      backgroundColor='white'
+    />
     <Container>
       <TitleHeader title="Cari yang terbaik untuk sepedamu" />
       <Header style={styles.header} searchBar rounded>
@@ -156,6 +163,7 @@ const ProductContainer = (props) => {
         <SearchedProduct
           navigation={props.navigation}
           productsFiltered={productsFiltered}
+          userId={context.user.id}
         />
       ) : (
         <ScrollView
@@ -250,6 +258,7 @@ const ProductContainer = (props) => {
         </ScrollView>
       )}
     </Container>
+    </>
   );
 };
 
@@ -265,14 +274,14 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#fff",
     width: "90%",
-    marginStart: 10,
+    marginStart: 17,
     borderRadius: 20,
     marginBottom: 20,
   },
   item: {
     height: 55,
     borderRadius: 20,
-    marginStart: -10,
+    marginStart: -15,
     backgroundColor: "#f2f2f2",
   },
   text: {

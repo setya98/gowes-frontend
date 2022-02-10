@@ -7,7 +7,8 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator, 
-  Image
+  Image,
+  StatusBar
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { FAB, Card } from "react-native-paper";
@@ -33,6 +34,10 @@ const ProductContainerSeller = (props) => {
 
   return (
     <>
+    <StatusBar
+      barStyle="dark-content"
+      backgroundColor='white'
+    />
       <SafeAreaView style={{ backgroundColor: "#fff" }}>
         <View style={styles.header}>
           <FontAwesome
@@ -46,10 +51,10 @@ const ProductContainerSeller = (props) => {
               fontSize: 20,
               fontWeight: "bold",
               letterSpacing: 0.3,
-              marginStart: 110,
+              marginStart: 100,
             }}
           >
-            Edit Profil
+            Daftar Produk
           </Text>
         </View>
 

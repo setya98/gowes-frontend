@@ -38,3 +38,8 @@ export const categoryOptions = [
     isChecked: false,
     orderIds: [],
   };
+
+  export const initialPhotos = {
+    photos: undefined,
+  };
+  

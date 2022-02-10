@@ -35,16 +35,14 @@ const Register = ({ navigation }) => {
   const [register, { loading }] = useMutation(REGISTER_USER, {
     update(_, { data: { register: userData } }) {
       console.log("succeeded register - userData: ", userData);
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [
-            {
-              name: "Login",
-            },
-          ],
-        })
-      );
+      navigation.navigate(
+        "Login"
+      )
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Daftar akun berhasil",
+      })
     },
     onError(err) {
       setErrors(err.graphQLErrors[0].extensions.exception.errors);

@@ -22,6 +22,7 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import { CommonActions } from "@react-navigation/native";
 import { AuthContext } from "../../../context/auth";
 import { useForm } from "../../../util/hooks";
+import { storage } from "../../../firebase";
 import {
   FETCH_USER_QUERY,
   UPDATE_SELLER_PROFILE_MUTATION,
@@ -33,6 +34,7 @@ const EditSeller = (props) => {
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
+  const [avatar, setAvatar] = useState("https://react.semantic-ui.com/images/avatar/large/molly.png");
 
   const {loading, data} = useQuery(FETCH_USER_QUERY, {
     variables: {
@@ -96,53 +98,49 @@ const EditSeller = (props) => {
             });
         }
       );
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Update Foto Profil Berhasil",
+      });
     }
   };
 
-  // let userObj = {
-  //   avatar: "",
-  //   username: currentUser.seller.username,
-  //   description: currentUser.seller.description,
-  // };
-
-  // if (currentUser) {
-  //   userObj = {
-  //     username: currentUser.seller.username,
-  //     description: currentUser.seller.description,
-  //   };
-  // }
-
-  // let { onChange, onSubmit, values } = useForm(updateSellerProfile, userObj);
-
-  const [values, setValues] = useState({
-    avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  let userObj = {
+    avatar: "",
     username: currentUser.seller.username,
     description: currentUser.seller.description,
-  });
-
-  // if(currentUser) {
-  //   setValues({
-  //     avatar: "",
-  //     username: currentUser.seller.username,
-  //     description: currentUser.seller.description,
-  //   })
-  // }
-
-  const onChange = (key, val) => {
-    setValues({ ...values, [key]: val });
   };
 
-  const onSubmit = (event) => {
-    event.preventDefault();
-    console.log(values)
-    sellerProfileUpdate();
-  };
+  if (currentUser) {
+    userObj = {
+      username: currentUser.seller.username,
+      description: currentUser.seller.description,
+    };
+  }
 
+  let { onChange, onSubmit, values } = useForm(updateSellerProfile, userObj);
+
+  // const [values, setValues] = useState({
+  //   avatar: "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //   username: currentUser.seller.username,
+  //   description: currentUser.seller.description,
+  // });
+
+  // const onChange = (key, val) => {
+  //   setValues({ ...values, [key]: val });
+  // };
+
+  // const onSubmit = (event) => {
+  //   event.preventDefault();
+  //   console.log(values)
+  //   sellerProfileUpdate();
+  // };
 
   const [sellerProfileUpdate] = useMutation(UPDATE_SELLER_PROFILE_MUTATION, {
     update(_, { data: { updateSellerProfile: sellerData } }) {
-      // sellerData.username = sellerData.seller.username;
-      // context.login(sellerData)
+      sellerData.username = sellerData.seller.username;
+      context.login(sellerData)
       console.log("updated")
       setErrors({});
       props.navigation.navigate("Seller");
@@ -156,9 +154,6 @@ const EditSeller = (props) => {
       setErrors(err.graphQLErrors[0].extensions.exception.errors);
       setSave(true);
     },
-    // variables: {
-    //   values,
-    // },
     variables: values
   });
 
@@ -195,7 +190,7 @@ const EditSeller = (props) => {
     </View>
   );
 
-  const bottomSheet = React.forwardRef();
+  const bottomSheet = React.createRef();
   const fall = new Animated.Value(1);
 
   return (
@@ -212,22 +207,16 @@ const EditSeller = (props) => {
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 110,
+            marginStart: 90
           }}
         >
           Edit Profil Toko
         </Text>
       </View>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 190,
-          backgroundColor: "#f2f2f2",
-        }}
-      >
+      
         <BottomSheet
           ref={bottomSheet}
-          snapPoints={[330, 0]}
+          snapPoints={[510, 0]}
           renderContent={renderInner}
           renderHeader={renderHeader}
           initialSnap={1}
@@ -296,10 +285,6 @@ const EditSeller = (props) => {
             autoCorrect={false}
             value={values.username}
             onChangeText={(val) => onChange("username", val)}
-            error={
-              (errors.username ? true : false,
-              console.log("this is the errors" + errors))
-            }
             style={[
               styles.textInput,
               {
@@ -316,7 +301,6 @@ const EditSeller = (props) => {
             placeholderTextColor="#666666"
             value={values.description}
             onChangeText={(val) => onChange("description", val)}
-            error={errors.description ? true : false}
             multiline={true}
             autoCorrect={false}
             numberOfLines={10}
@@ -334,7 +318,6 @@ const EditSeller = (props) => {
         
         </Animated.View>
         
-      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -369,10 +352,10 @@ const styles = StyleSheet.create({
   },
   panel: {
     padding: 20,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#cfcfcf",
   },
   headerRender: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#cfcfcf",
     shadowColor: "#333333",
     shadowOffset: { width: -1, height: -3 },
     shadowRadius: 2,

@@ -25,7 +25,7 @@ const Banner = () => {
         <View style={styles.swiper}>
           <Swiper
             style={{ height: width / 2 }}
-            showButtons={true}
+            showButtons={false}
             autoplay={true}
             autoplayTimeout={3}
           >

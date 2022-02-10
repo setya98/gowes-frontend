@@ -35,7 +35,7 @@ const OrderSeller = (props) => {
     },
   });
 
-  console.log(context.user.id)
+  // console.log(context.user.id)
 
   const { getUser: currentUser } = userData ? userData : [];
 

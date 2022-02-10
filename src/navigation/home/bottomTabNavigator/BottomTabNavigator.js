@@ -60,6 +60,10 @@ export default function Main({ navigation }) {
                 return false
               } if(routeName === "Edit Product"){
                 return false
+              } if(routeName === "Search Product"){
+                return false
+              } if(routeName === "Image Picker"){
+                return false
               }
               return true
           })(route),
@@ -169,6 +173,10 @@ export default function Main({ navigation }) {
               } if(routeName === "Order Detail"){
                 return false
               } if(routeName === "Add Review"){
+                return false
+              } if(routeName === "Image Picker"){
+                return false
+              } if(routeName === "Authentication"){
                 return false
               } 
               return true

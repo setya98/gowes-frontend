@@ -6,6 +6,7 @@ import AsynStorage from "@react-native-async-storage/async-storage"
 // Stacks
 import Login from "../../screens/authentication/Login";
 import Register from "../../screens/authentication/Register";
+import BottomTabNavigator from "../../navigation/home/bottomTabNavigator/BottomTabNavigator"
 import jwtDecode from "jwt-decode";
 
 const Auth = createStackNavigator()
@@ -47,6 +48,14 @@ export default function AuthNavigator() {
         <Auth.Screen 
           name="Register"
           component={Register}
+          options={{
+            title: "",
+            headerShown: false
+          }}
+        />
+        <Auth.Screen 
+          name="HomeTabNavigator"
+          component={BottomTabNavigator}
           options={{
             title: "",
             headerShown: false

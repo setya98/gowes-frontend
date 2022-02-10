@@ -24,6 +24,8 @@ const ProductReview = (props) => {
   })
   const { getItemReviews: reviews } = data ? data : []
 
+  // console.log("score", reviews.score)
+
   const handleChip = (name) => {
     setActiveChip(name);
     console.log(name);

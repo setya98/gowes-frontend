@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Dimensions,
   Text,
   ImageBackground,
@@ -15,18 +14,20 @@ import {
 } from "react-native";
 import { Button } from "native-base";
 import { useTheme } from "react-native-paper";
+import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
 import PropTypes from "prop-types";
-import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
 import Toast from "react-native-toast-message";
 import BottomSheet from "reanimated-bottom-sheet";
 
 import { useMutation } from "@apollo/react-hooks";
 import { connect } from "react-redux";
+import { storage } from "../../../firebase";
 import { CommonActions } from "@react-navigation/native";
 import { useForm } from "../../../util/hooks";
 import { ADD_ITEM_MUTATION, FETCH_ITEMS_QUERY } from "../../../util/graphql";
+import { ScrollView } from "react-native-gesture-handler";
 
 var { height } = Dimensions.get("window");
 
@@ -36,7 +37,9 @@ const AddProduct = (props) => {
   const [isSaved, setSave] = useState(false);
   const [image, setImage] = useState([]);
 
-  const [values, setValues] = useState({
+  console.log("foto", props.photos);
+
+  const { onChange, onSubmit, values } = useForm(addItem, {
     name: "",
     price: 0,
     stock: 0,
@@ -47,74 +50,123 @@ const AddProduct = (props) => {
     length: 0,
     width: 0,
     height: 0,
-    images: [
-      {
-        downloadUrl:
-          "https://react.semantic-ui.com/images/avatar/large/molly.png",
-      },
-      {
-        downloadUrl:
-          "https://react.semantic-ui.com/images/avatar/large/molly.png",
-      },
-    ],
-  })  
+  });
 
-    const onChange = (key, val) => {
-      setValues({ ...values, [key]: val });
-    };
-  
-    const onSubmit = (event) => {
-      event.preventDefault();
+  // const [values, setValues] = useState({
+  //   name: "",
+  //   price: 0,
+  //   stock: 0,
+  //   category: "",
+  //   condition: "",
+  //   weight: 0,
+  //   description: "",
+  //   length: 0,
+  //   width: 0,
+  //   height: 0,
+  //   images: [
+  //     {
+  //       downloadUrl:
+  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //     },
+  //     {
+  //       downloadUrl:
+  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //     },
+  //   ],
+  // })
+
+  // const onChange = (key, val) => {
+  //   setValues({ ...values, [key]: val });
+  // };
+
+  // const onSubmit = (event) => {
+  //   event.preventDefault();
+  //   submitItem();
+  // };
+
+  const uploadImage = async (uri, imageName) => {
+    if (uri) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const uploadTask = storage.ref(`images/itemImg/${imageName}`).put(blob);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {},
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          storage
+            .ref("images/itemImg")
+            .child(imageName)
+            .getDownloadURL()
+            .then((url) => {
+              // setImages(url);
+              setImage((img) => [...img, url]);
+              console.log("img url", url);
+            });
+        }
+      );
+    }
+  };
+
+  useEffect(() => {
+    console.log(image.length, "here");
+    if (props.photos && image.length == props.photos.length) {
+      let downloadUrlImages = [];
+      image.forEach((img) => {
+        downloadUrlImages.push({
+          downloadUrl: img,
+        });
+      });
+      values.images = downloadUrlImages;
       submitItem();
-    };
+    }
+  }, [image]);
 
-    const [submitItem] = useMutation(ADD_ITEM_MUTATION, {
-      update(proxy, result) {
-        console.log("product added")
+  const [submitItem] = useMutation(ADD_ITEM_MUTATION, {
+    update(proxy, result) {
+      console.log("product added");
+      const data = proxy.readQuery({
+        query: FETCH_ITEMS_QUERY,
+      });
 
-        const data= proxy.readQuery({
-          query: FETCH_ITEMS_QUERY
+      proxy.writeQuery({
+        query: FETCH_ITEMS_QUERY,
+        data: { getItems: [result.data.addItem, ...data.getItems] },
+      });
+
+      props.navigation.navigate("Seller");
+      Toast.show({
+        topOffset: 30,
+        type: "success",
+        text1: "Produk berhasil ditambah",
+      });
+    },
+    onError(err) {
+      setErrors(err.graphQLErrors[0].extensions.exception.errors);
+      setSave(true);
+    },
+    variables: values,
+  });
+
+  function addItem() {
+    props.photos.forEach((pic) => {
+      uploadImage(pic.uri, `item-${new Date().toISOString()}`)
+        .then(() => {
+          console.log("Success");
         })
-
-        proxy.writeQuery({
-          query: FETCH_ITEMS_QUERY,
-          data: { getItems: [result.data.addItem, ...data.getItems] }
-        })
-
-        props.navigation.navigate("Seller")
-        Toast.show({
-          topOffset: 30,
-          type: "success",
-          text1: "Produk berhasil ditambah"
-        })
-      },
-      onError(err) {
-        setErrors(err.graphQLErrors[0].extensions.exception.errors);
-        setSave(true);
-      },
-      variables: {
-        name: values.name,
-        price: parseInt(values.price),
-        stock: parseInt(values.stock),
-        category: values.category,
-        condition: values.condition,
-        weight: parseInt(values.weight),
-        description: values.description,
-        length: parseInt(values.length),
-        width: parseInt(values.width),
-        height: parseInt(values.height),
-        images: [
-          {
-            downloadUrl:
-              "https://react.semantic-ui.com/images/avatar/large/molly.png",
-          },
-          {
-            downloadUrl:
-              "https://react.semantic-ui.com/images/avatar/large/molly.png",
-          },
-        ],
-      }
-    })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+    (values.price = parseInt(values.price)),
+      (values.stock = parseInt(values.stock)),
+      (values.weight = parseInt(values.weight)),
+      (values.length = parseInt(values.length)),
+      (values.width = parseInt(values.width)),
+      (values.height = parseInt(values.height));
+  }
 
   const renderInner = () => (
     <View style={styles.panel}>
@@ -193,29 +245,43 @@ const AddProduct = (props) => {
               style={{
                 alignItems: "center",
                 marginBottom: 10,
+                marginTop: 15,
               }}
             >
-              <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
-                {props.photos.map((pic) => (
-                  <View
-                    style={{
-                      height: 100,
-                      width: 100,
-                      borderRadius: 15,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <ImageBackground
-                      source={{
-                        uri: pic.uri,
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                <TouchableOpacity
+                  onPress={() => bottomSheet.current.snapTo(0)}
+                  style={{
+                    flexDirection: "row",
+                    marginStart: 25,
+                    marginEnd: 25,
+                  }}
+                >
+                  {props.photos.map((pic) => (
+                    <View
+                      style={{
+                        height: 100,
+                        width: 100,
+                        borderRadius: 15,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginHorizontal: 5,
                       }}
-                      style={{ height: 100, width: 100 }}
-                      imageStyle={{ borderRadius: 20 }}
-                    ></ImageBackground>
-                  </View>
-                ))}
-              </TouchableOpacity>
+                    >
+                      <ImageBackground
+                        source={{
+                          uri: pic.uri,
+                        }}
+                        style={{ height: 100, width: 100 }}
+                        imageStyle={{ borderRadius: 20 }}
+                      ></ImageBackground>
+                    </View>
+                  ))}
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           ) : (
             <View
@@ -229,10 +295,17 @@ const AddProduct = (props) => {
                   <View
                     style={{
                       height: 100,
-                      width: 100,
-                      borderRadius: 15,
+                      marginTop: 15,
+                      width: "90%",
+                      marginStart: 15,
+                      borderRadius: 20,
                       justifyContent: "center",
                       alignItems: "center",
+                      backgroundColor: "#f2f2f2",
+                      borderWidth: 1,
+                      borderColor: "#000",
+                      borderTopColor: "#000",
+                      borderStyle: "dashed",
                     }}
                   >
                     <Image
@@ -489,14 +562,14 @@ const styles = StyleSheet.create({
     marginTop: 25,
     height: "100%",
     borderRadius: 30,
-    marginBottom: -90,
+    marginBottom: -120,
   },
   panel: {
     padding: 20,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#cfcfcf",
   },
   headerRender: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#cfcfcf",
     shadowColor: "#333333",
     shadowOffset: { width: -1, height: -3 },
     shadowRadius: 2,
@@ -599,4 +672,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProduct;
+AddProduct.propTypes = {
+  uploadMultipleImage: PropTypes.func.isRequired,
+  photos: PropTypes.array,
+};
+const mapStateToProps = (state) => ({
+  photos: state.imagePicker.photos,
+});
+
+export default connect(mapStateToProps, { uploadMultipleImage })(AddProduct);

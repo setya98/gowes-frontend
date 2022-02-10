@@ -6,7 +6,8 @@ import moment from "moment";
 
 const ProductReviewCard = (props) => {
 const review = props.review
-// console.log(props)
+console.log("score", review.body)
+
 
     return (
         <View>

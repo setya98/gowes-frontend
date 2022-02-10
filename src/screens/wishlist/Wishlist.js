@@ -37,18 +37,11 @@ const Wishlist = (props) => {
     <>
       <SafeAreaView style={{ backgroundColor: "#fff" }}>
         <View style={styles.header}>
-          <FontAwesome
-            onPress={() => props.navigation.goBack()}
-            name="chevron-left"
-            size={18}
-            style={{ top: 4 }}
-          />
           <Text
             style={{
               fontSize: 20,
               fontWeight: "bold",
               letterSpacing: 0.3,
-              marginStart: 110,
             }}
           >
             Wishlist
@@ -132,6 +125,7 @@ const styles = StyleSheet.create({
     margin: 15,
     flexDirection: "row",
     backgroundColor: "#fff",
+    alignSelf: "center"
   },
 });
 export default Wishlist;

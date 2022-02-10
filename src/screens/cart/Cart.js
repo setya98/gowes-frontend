@@ -6,6 +6,7 @@ import {
   Image,
   SafeAreaView,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import { Container, Text } from "native-base";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -86,6 +87,7 @@ const Cart = (props) => {
 
       cartScreen = (
         <>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
           <SafeAreaView style={{ backgroundColor: "#fff" }}>
             <View style={styles.header}>
               <FontAwesome
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     backgroundColor: "#fff",
     marginTop: 10,
-    marginStart: 17
+    marginStart: 17,
   },
   emptyContainer: {
     height: height,

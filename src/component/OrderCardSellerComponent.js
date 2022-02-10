@@ -6,7 +6,7 @@ import OrderCardDetail from "./OrderCardDetail";
 import moment from "moment"
 
 function OrderCardSellerComponent(props) {
-    console.log("test", props.order)
+    // console.log("detail pesanan", order)
     const order = props.order
     
     let itemPrice;

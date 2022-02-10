@@ -11,6 +11,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ApolloLink } from "apollo-link";
 import { createHttpLink } from "apollo-link-http";
 import Toast from "react-native-toast-message"
+import { createRef } from "react";
 
 // Redux
 import { Provider } from "react-redux";
@@ -22,9 +23,10 @@ import MainNavigator from "./src/navigation/MainNavigator";
 
 LogBox.ignoreAllLogs();
 LogBox.ignoreLogs(['new NativeEventEmitter']);
+LogBox.ignoreLogs(['Setting a timer for a long period of time'])
 
 const httpLink = createHttpLink({
-  uri: "http://192.168.5.12:4000",
+  uri: "http://192.168.5.11:4000",
 });
 
 const authLink = setContext(async () => {
@@ -70,7 +72,7 @@ export default function App() {
       <ApolloProvider client={client}>
         <SafeAreaProvider>
           <Provider store={store}>
-            <NavigationContainer>
+            <NavigationContainer ref={createRef()}>
               <MainNavigator />
               <StatusBar 
               backgroundColor="#fff"

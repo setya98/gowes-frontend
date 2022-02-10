@@ -10,7 +10,7 @@ import {
   ADD_TO_CART_MUTATION,
   FETCH_CART_QUERY,
   FETCH_USER_CART_QUERY,
-  FETCH_CHATS_QUERY
+  FETCH_CHATS_QUERY,
 } from "../util/graphql";
 import { useMutation, useQuery } from "@apollo/client";
 
@@ -25,7 +25,7 @@ const ItemButtonOrder = (props) => {
     note: "",
   });
 
-  console.log("ini chat", isChatExists)
+  console.log("ini chat", isChatExists);
 
   const chat = {
     id: isChatExists.length > 0 ? isChatExists[0]._id : "new",
@@ -87,6 +87,7 @@ const ItemButtonOrder = (props) => {
       itemId: item.id,
     },
   });
+
   const { getUserCartItem: cartItem } = userCartData ? userCartData : [];
   let itemAmountCart = 0;
 
@@ -107,7 +108,7 @@ const ItemButtonOrder = (props) => {
   return (
     <View style={styles.bottomHeader}>
       <Button
-        onPress={() => props.navigation.navigate("Chat", {chat, message})}
+        onPress={() => props.navigation.navigate("Chat", { chat, message })}
         style={{
           backgroundColor: "#fff",
           borderRadius: 20,
@@ -120,7 +121,11 @@ const ItemButtonOrder = (props) => {
       >
         <Ionicons name="chatbox-ellipses" size={25} />
       </Button>
-      <Button style={styles.btnCart} onPress={addItemCart} disabled={item.stock < 1}>
+      <Button
+        style={styles.btnCart}
+        onPress={addItemCart}
+        disabled={item.stock < 1}
+      >
         <Icon name="plus" size={16} style={{ color: "#fff" }} />
         <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}>
           Add To Cart

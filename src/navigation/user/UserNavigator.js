@@ -14,6 +14,7 @@ import OrderDetail from "../../screens/order/OrderDetail";
 import OrderDetailSeller from "../../screens/order/OrderDetailSeller";
 import ImagePicker from "../../screens/user/seller/ImagePicker"
 import AddReview from "../../screens/user/buyer/AddReview";
+import AuthNavigator from "../authentication/AuthNavigator";
 
 const Stack = createStackNavigator()
 
@@ -78,11 +79,16 @@ export default function UserNavigator({ navigation }) {
             <Stack.Screen
                 name="Image Picker"
                 component={ImagePicker}
-                options={{ headerRightContainerStyle: { paddingRight: 10 } }}
+                options={{ headerRightContainerStyle: { paddingRight: 20 } }}
             />
             <Stack.Screen
                 name='Add Review'
                 component={AddReview}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Authentication'
+                component={AuthNavigator}
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

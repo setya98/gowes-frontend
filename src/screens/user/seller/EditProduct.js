@@ -11,15 +11,22 @@ import {
   Alert,
   ImageBackground,
   Picker,
+  KeyboardAvoidingView
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import { Text } from "native-base";
+import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Animated from "react-native-reanimated";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
+import PropTypes from "prop-types";
+import BottomSheet from "reanimated-bottom-sheet";
 
 import { useMutation } from "@apollo/client";
+import { connect } from "react-redux";
+import { storage } from "../../../firebase";
+import { useForm } from "../../../util/hooks";
 import { AuthContext } from "../../../context/auth";
 import {
   UPDATE_ITEM_MUTATION,
@@ -36,10 +43,10 @@ const EditProduct = (props) => {
   const context = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const [isSaved, setSave] = useState(false);
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState([]);
 
-  
   console.log("category", typeof(product.getItem.category))
+  console.log("foto", props.photos);
 
   const deleteAlert = () =>
   Alert.alert("Hapus Produk", "Kamu yakin ingin hapus produk?", [
@@ -53,39 +60,112 @@ const EditProduct = (props) => {
     },
   ]);
 
-  const [values, setValues] = useState({
-    name: product.getItem.name,
-    price: product.getItem.price.toString(),
-    stock: product.getItem.stock.toString(),
-    category: product.getItem.category,
-    condition: product.getItem.condition,
-    weight: product.getItem.weight.toString(),
-    description: product.getItem.description,
-    length: product.getItem.dimension.length.toString(),
-    width: product.getItem.dimension.width.toString(),
-    height: product.getItem.dimension.height.toString(),
-    itemId: itemId,
-    images: [
-      {
-        downloadUrl:
-          "https://react.semantic-ui.com/images/avatar/large/molly.png",
-      },
-      {
-        downloadUrl:
-          "https://react.semantic-ui.com/images/avatar/large/molly.png",
-      },
-    ],
-  });
+  let itemObj;
 
-  const onChange = (key, val) => {
-    setValues({ ...values, [key]: val });
+  if (product) {
+    itemObj = {
+      name: product.getItem.name,
+      price: product.getItem.price.toString(),
+      stock: product.getItem.stock.toString(),
+      category: product.getItem.category,
+      condition: product.getItem.condition,
+      weight: product.getItem.weight.toString(),
+      description: product.getItem.description,
+      length: product.getItem.dimension.length.toString(),
+      width: product.getItem.dimension.width.toString(),
+      height: product.getItem.dimension.height.toString(),
+      itemId: itemId,
+    };
+  } else {
+    itemObj = {
+      name: "",
+      price: 0,
+      stock: 0,
+      category: "",
+      condition: "",
+      weight: 0,
+      description: "",
+      length: 0,
+      width: 0,
+      height: 0,
+      itemId: itemId
+    };
+  }
+
+  const { onChange, onSubmit, values } = useForm(editItem, itemObj)
+
+  // const [values, setValues] = useState({
+  //   name: product.getItem.name,
+  //   price: product.getItem.price.toString(),
+  //   stock: product.getItem.stock.toString(),
+  //   category: product.getItem.category,
+  //   condition: product.getItem.condition,
+  //   weight: product.getItem.weight.toString(),
+  //   description: product.getItem.description,
+  //   length: product.getItem.dimension.length.toString(),
+  //   width: product.getItem.dimension.width.toString(),
+  //   height: product.getItem.dimension.height.toString(),
+  //   itemId: itemId,
+  //   images: [
+  //     {
+  //       downloadUrl:
+  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //     },
+  //     {
+  //       downloadUrl:
+  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
+  //     },
+  //   ],
+  // });
+
+  // const onChange = (key, val) => {
+  //   setValues({ ...values, [key]: val });
+  // };
+
+  // const onSubmit = (event) => {
+  //   event.preventDefault();
+  //   editItem();
+  // };
+
+  const uploadImage = async (uri, imageName) => {
+    if (uri) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const uploadTask = storage.ref(`images/itemImg/${imageName}`).put(blob);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {},
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          storage
+            .ref("images/itemImg")
+            .child(imageName)
+            .getDownloadURL()
+            .then((url) => {
+              // setImages(url);
+              setImage((img) => [...img, url]);
+              console.log("img url", url);
+            });
+        }
+      );
+    }
   };
 
-  const onSubmit = (event) => {
-    event.preventDefault();
-    editItem();
-    // console.log(values)
-  };
+  useEffect(() => {
+    console.log(image.length, "here");
+    if (props.photos && image.length == props.photos.length) {
+      let downloadUrlImages = [];
+      image.forEach((img) => {
+        downloadUrlImages.push({
+          downloadUrl: img,
+        });
+      });
+      values.images = downloadUrlImages;
+      updateItem();
+    }
+  }, [image]);
 
   const [updateItem] = useMutation(UPDATE_ITEM_MUTATION, {
     update(_, { data: { updateItem: updatedItem } }) {
@@ -106,13 +186,21 @@ const EditProduct = (props) => {
   });
 
   function editItem() {
-    values.price = parseInt(values.price);
-    values.stock = parseInt(values.stock);
-    values.weight = parseInt(values.weight);
-    values.length = parseInt(values.length);
-    values.width = parseInt(values.width);
-    values.height = parseInt(values.height);
-    updateItem();
+    props.photos.forEach((pic) => {
+      uploadImage(pic.uri, `item-${new Date().toISOString()}`)
+        .then(() => {
+          console.log("Success");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+    (values.price = parseInt(values.price)),
+      (values.stock = parseInt(values.stock)),
+      (values.weight = parseInt(values.weight)),
+      (values.length = parseInt(values.length)),
+      (values.width = parseInt(values.width)),
+      (values.height = parseInt(values.height));
   }
 
   function itemDelete(){
@@ -144,21 +232,36 @@ const EditProduct = (props) => {
     variables: { itemId: itemId },
   });
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  const renderInner = () => (
+    <View style={styles.panel}>
+      <View style={{ alignItems: "center" }}>
+        <Text style={styles.panelTitle}>Unggah Foto</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.panelButton}
+        onPress={() => props.navigation.navigate("Image Picker")}
+      >
+        <Text style={styles.panelButtonTitle}>Pilih Dari Galeri</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.panelButton}
+        onPress={() => bottomSheet.current.snapTo(1)}
+      >
+        <Text style={styles.panelButtonTitle}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-    // console.log(result);
+  const renderHeader = () => (
+    <View style={styles.headerRender}>
+      <View style={styles.panelHeader}>
+        <View style={styles.panelHandle} />
+      </View>
+    </View>
+  );
 
-    if (!result.cancelled) {
-      setImage(result.uri);
-    }
-  };
+  const bottomSheet = React.createRef();
+  const fall = new Animated.Value(1);
 
   return (
     <SafeAreaView style={{ backgroundColor: "#f2f2f2" }}>
@@ -180,34 +283,83 @@ const EditProduct = (props) => {
           Edit Produk
         </Text>
       </View>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 190,
-          backgroundColor: "#f2f2f2",
-        }}
+      <KeyboardAvoidingView
+        enabled={true}
+        contentContainerStyle={styles.container}
       >
-        <Animated.View>
-          <View style={{ alignItems: "center", marginTop: 20 }}>
-            <TouchableOpacity onPress={pickImage}>
-              <View
-                style={{
-                  height: 100,
-                  width: 100,
-                  borderRadius: 15,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <ImageBackground
-                  source={require("../../../assets/store.png")}
-                  style={{ height: 100, width: 100, borderRadius: 15 }}
-                >
+        <BottomSheet
+          ref={bottomSheet}
+          snapPoints={[330, 0]}
+          renderContent={renderInner}
+          renderHeader={renderHeader}
+          initialSnap={1}
+          callbackNode={fall}
+          enabledGestureInteraction={true}
+          enabledContentTapInteraction={false}
+        />
+        <Animated.ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: height }}
+          style={{
+            opacity: Animated.add(0.1, Animated.multiply(fall, 1.0)),
+          }}
+        >
+          {props.photos ? (
+            <View
+              style={{
+                alignItems: "center",
+                marginBottom: 10,
+                marginTop: 15,
+              }}
+            >
+              <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} >
+              <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)} style={{flexDirection: "row", marginStart: 25, marginEnd: 25}}>
+                {props.photos.map((pic) => (
                   <View
                     style={{
-                      flex: 1,
+                      height: 100,
+                      width: 100,
+                      borderRadius: 15,
                       justifyContent: "center",
                       alignItems: "center",
+                      marginHorizontal: 5
+                    }}
+                  >
+                    <ImageBackground
+                      source={{
+                        uri: pic.uri,
+                      }}
+                      style={{ height: 100, width: 100 }}
+                      imageStyle={{ borderRadius: 20 }}
+                    ></ImageBackground>
+                  </View>
+                ))}
+              </TouchableOpacity>
+              </ScrollView>
+            </View>
+          ) : (
+            <View
+              style={{
+                alignItems: "center",
+                marginBottom: 15,
+              }}
+            >
+              <TouchableOpacity onPress={() => bottomSheet.current.snapTo(0)}>
+                <View style={{ flexDirection: "row" }}>
+                  <View
+                    style={{
+                      height: 100,
+                      marginTop: 15,
+                      width: "90%",
+                      marginStart: 15,
+                      borderRadius: 20,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "#f2f2f2",
+                      borderWidth: 1,
+                      borderColor: "#000",
+                      borderTopColor: "#000",
+                      borderStyle: "dashed",
                     }}
                   >
                     <Image
@@ -216,16 +368,16 @@ const EditProduct = (props) => {
                         opacity: 0.8,
                         alignItems: "center",
                         justifyContent: "center",
-                        tintColor: "#fff",
+                        tintColor: "#000",
                         width: 25,
                         height: 25,
                       }}
                     />
                   </View>
-                </ImageBackground>
-              </View>
-            </TouchableOpacity>
-          </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
           <View style={styles.detailContainer}>
             <View style={{ paddingVertical: 20, marginStart: 15 }}>
               <Text style={{ fontSize: 20, fontWeight: "bold" }}>
@@ -309,7 +461,6 @@ const EditProduct = (props) => {
                 value={values.category}
                 onValueChange={(val) => onChange("category", val)}
               >
-                <Picker.Item label="-" value="-" />
                 <Picker.Item label="sparepart" value="sparepart" />
                 <Picker.Item label="accessories" value="accessories" />
                 <Picker.Item label="apparel" value="apparel" />
@@ -331,7 +482,6 @@ const EditProduct = (props) => {
                 value={values.condition}
                 onValueChange={(val) => onChange("condition", val)}
               >
-                <Picker.Item label="-" value="-" />
                 <Picker.Item label="New" value="New" />
                 <Picker.Item label="Used" value="Used" />
               </Picker>
@@ -443,8 +593,8 @@ const EditProduct = (props) => {
               <Text style={styles.panelButtonTitle}>Simpan</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
-      </ScrollView>
+          </Animated.ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -465,6 +615,7 @@ const styles = StyleSheet.create({
   panelButtonTitle: {
     fontSize: 20,
     fontWeight: "bold",
+    marginStart: "50%",
     color: "white",
   },
   commandButton: {
@@ -495,32 +646,34 @@ const styles = StyleSheet.create({
   },
   panel: {
     padding: 20,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#cfcfcf",
     paddingTop: 20,
   },
   headerRender: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#cfcfcf",
     shadowColor: "#333333",
     shadowOffset: { width: -1, height: -3 },
     shadowRadius: 2,
     shadowOpacity: 0.4,
     paddingTop: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
   },
   panelHeader: {
     alignItems: "center",
   },
   panelHandle: {
-    width: 40,
+    width: 50,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#00000040",
+    backgroundColor: "#000",
     marginBottom: 10,
   },
   panelTitle: {
     fontSize: 27,
-    height: 35,
+    marginTop: -5,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   panelSubtitle: {
     fontSize: 14,
@@ -530,13 +683,15 @@ const styles = StyleSheet.create({
   },
   panelButton: {
     padding: 13,
-    borderRadius: 10,
-    backgroundColor: "green",
+    borderRadius: 20,
+    width: "70%",
+    backgroundColor: "#000",
     alignItems: "center",
     marginVertical: 7,
+    alignSelf: "center",
   },
   panelButtonTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "bold",
     color: "white",
   },
@@ -598,4 +753,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProduct;
+EditProduct.propTypes = {
+  uploadMultipleImage: PropTypes.func.isRequired,
+  photos: PropTypes.array,
+};
+const mapStateToProps = (state) => ({
+  photos: state.imagePicker.photos,
+});
+
+export default connect(mapStateToProps, { uploadMultipleImage })(
+  EditProduct
+);

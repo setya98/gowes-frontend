@@ -38,15 +38,8 @@ const Login = ({ navigation }) => {
       userData.name = userData.buyer.name;
       login(userData);
       console.log(userData)
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [
-            {
-              name: "HomeTabNavigator"
-            }
-          ]
-        })
+      navigation.navigate(
+        "HomeTabNavigator"
       )
       console.log(userData);
         Toast.show({

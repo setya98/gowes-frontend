@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Card, Avatar } from "react-native-paper";
-import { Left, Right, Body, Container, H3 } from "native-base";
+import { Left } from "native-base";
 import { currencyIdrConverter } from "../util/extensions";
 
 function OrderCardDetail(props) {
@@ -23,6 +23,9 @@ function OrderCardDetail(props) {
             <Text style={{ fontSize: 18, fontWeight:"bold", color: "#595959" }}>{props.item.name}</Text>
             <Text style={{ fontSize: 14, fontWeight:"bold", color: "#8c8c8c", marginTop: 5 }}>
              Jumlah : {props.item.amountItem}
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight:"bold", color: "#8c8c8c", marginTop: 5 }}>
+             Note : {props.item.note}
             </Text>
           </Left>
         </Card.Content>

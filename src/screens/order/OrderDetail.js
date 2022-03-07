@@ -1,54 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   Alert,
   Text,
-  Modal,
-  Pressable,
   TouchableOpacity,
   Dimensions,
-  TextInput,
-  KeyboardAvoidingView,
   SafeAreaView,
   View,
 } from "react-native";
-import { Card, Divider, useTheme } from "react-native-paper";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import Toast from "react-native-toast-message";
-import Material from "react-native-vector-icons/MaterialCommunityIcons";
-import { Rating } from "react-native-ratings";
+import { Card, Divider } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import { currencyIdrConverter } from "../../util/extensions";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+
+import Toast from "react-native-toast-message";
 import moment from "moment";
 
 import { useMutation } from "@apollo/react-hooks";
-import { UPDATE_ORDER, ADD_REVIEW_MUTATION } from "../../util/graphql";
+import { UPDATE_ORDER } from "../../util/graphql";
 
 import OrderCardDetail from "../../component/OrderCardDetail";
 
 var { height } = Dimensions.get("window");
 
 const OrderDetail = (props) => {
-  const { colors } = useTheme();
+  const navigation = useNavigation();
   const [errors, setErrors] = useState({});
   const [stateType, setStateType] = useState("");
   const [editState, setEditState] = useState(false);
-
-  const [score, setScore] = useState(0);
-  const [body, setBody] = useState("");
-  const [itemId, setItemId] = useState("");
-
-  console.log(score, "the score");
-
-  const handleRating = (rating) => {
-    setScore(rating);
-  };
-
-  const handleChange = (val) => {
-    setBody(val);
-  };
-
-  const [modalVisible, setModalVisible] = useState(false);
 
   const order = props.route.params.order;
   const orderId = order.id;
@@ -69,33 +49,6 @@ const OrderDetail = (props) => {
     );
   }
 
-  console.log(idTemp, "testt");
-
-  const reviewHandler = () => {
-    addReview();
-  };
-
-  const [addReview] = useMutation(ADD_REVIEW_MUTATION, {
-    update(_, { data: { addReview: reviewData } }) {
-      setModalVisible(false)
-      console.log("updated")
-      props.navigation.navigate("Buyer")
-      Toast.show({
-        topOffset: 30,
-        type: "success",
-        text1: "Review berhasil ditambahkan",
-      });
-    },
-    onError(err) {
-      setErrors(err.graphQLErrors[0].extensions.exception.errors);
-    },
-    variables: {
-      score: score,
-      body: body,
-      itemId: itemId,
-  }
-  });
-
   const shippingCost = order.shipping.shippingCost;
 
   const grossAmount = itemPrice * amountItem;
@@ -113,7 +66,7 @@ const OrderDetail = (props) => {
 
   function confirmArrivalOrder() {
     setStateType("ARRIVED");
-    props.navigation.navigate("Order");
+    navigation.navigate("Order");
     Toast.show({
       topOffset: 30,
       type: "success",
@@ -126,7 +79,7 @@ const OrderDetail = (props) => {
   }
   function confirmCompleteOrder() {
     setStateType("COMPLETED");
-    props.navigation.navigate("Order");
+    navigation.navigate("Order");
     Toast.show({
       topOffset: 30,
       type: "success",
@@ -248,7 +201,7 @@ const OrderDetail = (props) => {
             marginBottom: "10%",
           }}
           mode="contained"
-          onPress={() => setModalVisible(true)}
+          onPress={() => navigation.navigate("Add Product Review", {order: order})}
         >
           <Text
             style={{
@@ -370,7 +323,7 @@ const OrderDetail = (props) => {
                 marginTop: 5,
               }}
             >
-              {moment(order.state.createdAt).format('lll')}
+              {moment(order.state.createdAt).format("lll")}
             </Text>
           </View>
         </Card.Content>
@@ -458,7 +411,9 @@ const OrderDetail = (props) => {
             <Text style={{ fontWeight: "700", color: "#8c8c8c" }}>
               No. Resi:
             </Text>
-            {order.state.stateType === "DELIVERY" || "ARRIVED" || "COMPLETED" ? (
+            {order.state.stateType === "DELIVERY" ||
+            "ARRIVED" ||
+            "COMPLETED" ? (
               <Text
                 style={{
                   fontWeight: "bold",
@@ -467,7 +422,7 @@ const OrderDetail = (props) => {
                   marginTop: 5,
                 }}
               >
-               {order.shipping.awbNumber}
+                {order.shipping.awbNumber}
               </Text>
             ) : (
               <></>
@@ -545,56 +500,6 @@ const OrderDetail = (props) => {
           </View>
         </Card.Content>
         {orderActionButton}
-        <Modal animationType="tap" transparent={true} visible={modalVisible}>
-          <KeyboardAvoidingView>
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <View style={{ position: "absolute", right: 15, top: 15 }}>
-                  <Material
-                    name="close"
-                    onPress={() => setModalVisible(false)}
-                    size={18}
-                  />
-                </View>
-                <Rating
-                  type="star"
-                  ratingTextColor="#000"
-                  ratingCount={5}
-                  imageSize={30}
-                  showRating
-                  onFinishRating={(rating) => handleRating(rating)}
-                />
-                <TextInput
-                  name="body"
-                  placeholder="Tulis ulasan produk"
-                  placeholderTextColor="#666666"
-                  value={body}
-                  onChangeText={(val) => handleChange(val)}
-                  autoCorrect={false}
-                  style={[
-                    styles.textInput,
-                    {
-                      color: colors.text,
-                      backgroundColor: "#f2f2f2",
-                      width: "100%",
-                      marginTop: 15,
-                      marginBottom: 15,
-                      borderRadius: 15,
-                    },
-                  ]}
-                />
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => {
-                    setItemId(idTemp), reviewHandler();
-                  }}
-                >
-                  <Text style={styles.textStyle}>Simpan</Text>
-                </Pressable>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -605,60 +510,6 @@ const styles = StyleSheet.create({
     margin: 15,
     flexDirection: "row",
     backgroundColor: "#fff",
-  },
-  centeredView: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
-    width: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalView: {
-    margin: 20,
-    height: "50%",
-    width: "80%",
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  button: {
-    borderRadius: 15,
-    padding: 10,
-    elevation: 2,
-    marginBottom: -20
-  },
-  buttonOpen: {
-    backgroundColor: "#F194FF",
-  },
-  buttonClose: {
-    backgroundColor: "#000",
-    width: 150,
-    height: 40
-  },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center",
-  },
-  textInput: {
-    flex: 1,
-    paddingLeft: 15,
-    color: "#000",
-    fontWeight: "500",
-    fontSize: 16,
   },
 });
 

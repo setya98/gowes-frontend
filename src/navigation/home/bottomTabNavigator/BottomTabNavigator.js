@@ -60,6 +60,8 @@ export default function Main({ navigation }) {
                 return false
               } if(routeName === "Edit Product"){
                 return false
+              } if(routeName === "Store Seller"){
+                return false
               } if(routeName === "Search Product"){
                 return false
               } if(routeName === "Image Picker"){
@@ -94,6 +96,10 @@ export default function Main({ navigation }) {
             tabBarVisible: ((route) => {
               const routeName = getFocusedRouteNameFromRoute(route) ?? ""
                if (routeName === "Checkout") {
+                return false
+               } if (routeName === "Midtrans") {
+                return false
+               } if (routeName === "Payment Checker") {
                 return false
               } 
               return true
@@ -177,6 +183,8 @@ export default function Main({ navigation }) {
               } if(routeName === "Image Picker"){
                 return false
               } if(routeName === "Authentication"){
+                return false
+              } if(routeName === "Add Product Review"){
                 return false
               } 
               return true

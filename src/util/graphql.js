@@ -567,6 +567,7 @@ export const MESSAGES_SUBSCRIPTION = gql`
   }
 `;
 
+
 export const ADD_MESSAGE = gql`
   mutation addMessage($chatId: ID!, $receiverUserId: ID!, $content: String!) {
     addMessage(
@@ -930,6 +931,10 @@ export const FETCH_ITEM_SELLER_QUERY = gql`
       }
       user {
         id
+        address {
+          cityId
+          cityName
+        }
         seller {
           id
           username
@@ -1032,15 +1037,21 @@ export const ADD_REVIEW_MUTATION = gql`
     $score: Int!
     $body: String!
     $itemId: ID!
+    $images: [ImageInput]!
   ) {
     addReview(
       addReviewInput: {
         score: $score
         body: $body
         itemId: $itemId
+        images: $images
       }
     ) {
       id
+      images {
+        id
+        downloadUrl
+      }
       score
       body
       createdAt
@@ -1119,6 +1130,7 @@ export const CREATE_PAYMENT_QUERY = gql`
     createPayment(createPaymentInput: $createPaymentInput) {
       token
       redirect_url
+      orderId
     }
   }
 `;

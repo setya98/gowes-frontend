@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -25,6 +25,7 @@ var { height } = Dimensions.get("window");
 const Seller = (props) => {
   const { user } = useContext(AuthContext)
   console.log('user login', user.id )
+  
   const { loading, data } = useQuery(FETCH_USER_QUERY, {
     variables: {
       userId: user.id

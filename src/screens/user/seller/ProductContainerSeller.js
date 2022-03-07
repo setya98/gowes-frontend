@@ -18,7 +18,7 @@ import { AuthContext } from "../../../context/auth";
 import { FETCH_ITEM_SELLER_QUERY } from "../../../util/graphql";
 import { objectSize } from "../../../util/extensions";
 
-var { height, width } = Dimensions.get("window");
+var { height } = Dimensions.get("window");
 
 const ProductContainerSeller = (props) => {
   const context = useContext(AuthContext);

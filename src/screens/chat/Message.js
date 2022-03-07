@@ -133,9 +133,10 @@ const Message = (props) => {
       messages={getMessageGiftedChat()}
       onSend={(messages) => onSend(messages)}
       user={{
-        _id: 2,
+        _id: 1,
       }}
       alwaysShowSend
+      showUserAvatar
       scrollToBottom
       scrollToBottomComponent={scrollToBottomComponent}
     />

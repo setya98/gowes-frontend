@@ -177,7 +177,8 @@ const ItemSummaryCheckout = (props) => {
   if (loading) return <Text>Loading ...</Text>;
 
   return (
-      <Card.Content style={{backgroundColor: "#fff", borderRadius: 20, marginStart: 15, marginEnd: 15, width: "90%", elevation: 1}}>
+    <View style={{width: "90%", marginStart: 15}}>
+      <Card.Content style={{backgroundColor: "#fff", borderRadius: 20, elevation: 1}}>
         <Text style={styles.textHeader}>Total Belanja</Text>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Text
@@ -219,6 +220,8 @@ const ItemSummaryCheckout = (props) => {
           </Text>
         </View>
       </Card.Content>
+     <Card.Content>{pay()}</Card.Content>
+        </View>
   );
 };
 
@@ -247,11 +250,13 @@ const styles = StyleSheet.create({
 
 ItemSummaryCheckout.propTypes = {
   checkoutItems: PropTypes.func.isRequired,
+  setAddOrder: PropTypes.func.isRequired,
   carts: PropTypes.array,
 };
 const mapStateToProps = (state) => ({
   carts: state.orders.checkoutOrders,
   isChange: state.orders.isChange,
+  isAddOrder: state.orders.isAddOrder,
 });
 
-export default connect(mapStateToProps, { checkoutItems })(ItemSummaryCheckout);
+export default connect(mapStateToProps, { checkoutItems, setAddOrder })(ItemSummaryCheckout);

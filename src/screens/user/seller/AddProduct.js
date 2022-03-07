@@ -13,6 +13,7 @@ import {
   Picker,
 } from "react-native";
 import { Button } from "native-base";
+import { ScrollView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 import { uploadMultipleImage } from "../../../../Redux/actions/imagePickerAction";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -27,7 +28,6 @@ import { storage } from "../../../firebase";
 import { CommonActions } from "@react-navigation/native";
 import { useForm } from "../../../util/hooks";
 import { ADD_ITEM_MUTATION, FETCH_ITEMS_QUERY } from "../../../util/graphql";
-import { ScrollView } from "react-native-gesture-handler";
 
 var { height } = Dimensions.get("window");
 
@@ -51,38 +51,6 @@ const AddProduct = (props) => {
     width: 0,
     height: 0,
   });
-
-  // const [values, setValues] = useState({
-  //   name: "",
-  //   price: 0,
-  //   stock: 0,
-  //   category: "",
-  //   condition: "",
-  //   weight: 0,
-  //   description: "",
-  //   length: 0,
-  //   width: 0,
-  //   height: 0,
-  //   images: [
-  //     {
-  //       downloadUrl:
-  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
-  //     },
-  //     {
-  //       downloadUrl:
-  //         "https://react.semantic-ui.com/images/avatar/large/molly.png",
-  //     },
-  //   ],
-  // })
-
-  // const onChange = (key, val) => {
-  //   setValues({ ...values, [key]: val });
-  // };
-
-  // const onSubmit = (event) => {
-  //   event.preventDefault();
-  //   submitItem();
-  // };
 
   const uploadImage = async (uri, imageName) => {
     if (uri) {

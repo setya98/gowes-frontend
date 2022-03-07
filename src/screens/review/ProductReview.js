@@ -67,7 +67,6 @@ const ProductReview = (props) => {
     reviewList.push(reviews.filter((review) => review.score === 5));
   }
 
-  console.log(reviewList);
 
   return (
     <>
@@ -84,7 +83,7 @@ const ProductReview = (props) => {
             fontSize: 20,
             fontWeight: "bold",
             letterSpacing: 0.3,
-            marginStart: 110,
+            marginStart: 100,
           }}
         >
           Ulasan Produk

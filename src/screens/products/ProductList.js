@@ -15,7 +15,7 @@ const ProductList = (props) => {
       }
     >
       <View style={{ width: width / 2, backgroundColor: "white" }}>
-        <ProductCard item={item} />
+        <ProductCard item={item} userId={userId} />
       </View>
     </TouchableWithoutFeedback>
   );

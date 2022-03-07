@@ -97,11 +97,12 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
-    width: width / 2 - 20 - 55,
-    height: width / 2 + 5,
+    width: width / 2 - 20 - 25,
+    height: width / 2 - 10,
     backgroundColor: "transparent",
     position: "absolute",
-    top: -5,
+    top: 10,
+    borderRadius: 15
   },
   card: {
     marginBottom: 10,

@@ -141,7 +141,7 @@ const Order = (props) => {
               fontSize: 20,
               fontWeight: "bold",
               letterSpacing: 0.3,
-              marginStart: 110,
+              marginStart: 100,
             }}
           >
             Daftar Pesanan
@@ -441,7 +441,7 @@ const Order = (props) => {
                   orderList[0].map((orderItem) => (
                     <OrderCardComponent
                       order={orderItem}
-                      navigation={props.navigation}
+                      navigation={props.navig1ation}
                     />
                   ))}
               </Card.Content>

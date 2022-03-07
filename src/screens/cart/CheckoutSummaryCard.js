@@ -178,6 +178,7 @@ const CheckoutSummaryCard = (props) => {
 
   return (
     <View>
+      {/* <ActivityIndicator color="#000" size="large" /> */}
       <Card.Content style={{marginTop: 15, marginBottom: 10}}>
       <View style={{ flexDirection: "row", justifyContent: "space-between"}}>
         <Text style={{ fontSize: 16, fontWeight: "bold", color: "#595959", marginTop: 5}}>

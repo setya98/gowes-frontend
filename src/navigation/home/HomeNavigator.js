@@ -7,6 +7,7 @@ import SearchedProduct from "../../screens/products/SearchedProduct";
 import ProductReview from "../../screens/review/ProductReview";
 import EditProduct from "../../screens/user/seller/EditProduct";
 import ImagePicker from "../../screens/user/seller/ImagePicker";
+import StoreSeller from "../../screens/products/StoreSeller";
 
 const Stack = createStackNavigator()
 
@@ -41,6 +42,11 @@ export default function HomeNavigator({ navigation }) {
             <Stack.Screen
                 name='Edit Product'
                 component={EditProduct}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Store Seller'
+                component={StoreSeller}
                 options={{ headerShown: false }}
             />
             <Stack.Screen

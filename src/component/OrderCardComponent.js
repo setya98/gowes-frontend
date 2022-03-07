@@ -3,10 +3,12 @@ import { StyleSheet, Image } from "react-native";
 import { Card,Text } from "react-native-paper";
 import { Left, Right } from "native-base";
 import OrderCardDetail from "./OrderCardDetail";
+import { useNavigation } from "@react-navigation/native";
 import moment from "moment"
 
 function OrderCardComponent(props) {
-    console.log("test", props.order)
+    // console.log("test", props.order)
+    const navigation = useNavigation();
     const order = props.order
 
     let itemPrice;
@@ -26,7 +28,7 @@ function OrderCardComponent(props) {
     return (
       <Card style ={{borderRadius: 20, marginTop: 20, paddingBottom: 20}}
       onPress={() =>
-        props.navigation.navigate("Order Detail", {
+        navigation.navigate("Order Detail", {
           order: order,
         })
       }

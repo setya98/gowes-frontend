@@ -43,7 +43,7 @@ const Chat = (props) => {
     }
     return userReceiver;
   };
-  console.log(chats, "chats");
+  // console.log("chats", chats);
 
   return (
     <>

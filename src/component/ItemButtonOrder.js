@@ -5,6 +5,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Icon from "react-native-vector-icons/AntDesign";
 import Toast from "react-native-toast-message";
 import { AuthContext } from "../context/auth";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   ADD_TO_CART_MUTATION,
@@ -14,10 +15,9 @@ import {
 } from "../util/graphql";
 import { useMutation, useQuery } from "@apollo/client";
 
-const ItemButtonOrder = (props) => {
-  const item = props.item;
-  const isChatExists = props.isChatExists;
+function ItemButtonOrder({item, isChatExists}) {
   const context = useContext(AuthContext);
+  const navigation = useNavigation();
   const [amountItem, setAmountItem] = useState(1);
   const [errors, setErrors] = useState({});
   const [note, setNote] = useState("");
@@ -25,7 +25,7 @@ const ItemButtonOrder = (props) => {
     note: "",
   });
 
-  console.log("ini chat", isChatExists);
+  // console.log("ini chat", isChatExists);
 
   const chat = {
     id: isChatExists.length > 0 ? isChatExists[0]._id : "new",
@@ -108,7 +108,7 @@ const ItemButtonOrder = (props) => {
   return (
     <View style={styles.bottomHeader}>
       <Button
-        onPress={() => props.navigation.navigate("Chat", { chat, message })}
+        onPress={() => navigation.navigate("Chat", { chat, message })}
         style={{
           backgroundColor: "#fff",
           borderRadius: 20,
